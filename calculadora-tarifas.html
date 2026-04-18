@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Tarifas — Agencia Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--c-bg:#16181c;--c-bg2:#1e2127;--c-bg3:#252830;--c-border:#2e3138;--c-border2:#3a3e48;--c-text:#e8eaf0;--c-text2:#9ea3b0;--c-text3:#64697a;--c-teal:#71c3b4;--c-teal-d:#4fa898;--c-teal-dim:rgba(113,195,180,.12);--c-yellow:#fdda63;--c-yellow-d:#e8c340;--c-grey:#54565b;--c-red:#e07070;--rad:10px;--rad-sm:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body,input,button{font-family:'DM Sans',sans-serif}
+body{background:var(--c-bg);color:var(--c-text);min-height:100vh;padding:1.5rem}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--c-border)}
+.tab{font-size:12px;padding:6px 16px;border-radius:20px;border:1px solid var(--c-border2);cursor:pointer;background:var(--c-bg2);color:var(--c-text2);font-weight:500;transition:all .2s;letter-spacing:.02em}
+.tab:hover{border-color:var(--c-teal);color:var(--c-teal)}
+.tab.on{background:var(--c-teal);border-color:var(--c-teal);color:#0f1a18;font-weight:600}
+.pane{display:none}.pane.on{display:block}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{background:var(--c-bg2);border:1px solid var(--c-border);border-radius:var(--rad);padding:1.1rem 1.25rem;margin-bottom:12px;transition:border-color .2s}
+.card:hover{border-color:var(--c-border2)}
+.sec{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--c-teal);text-transform:uppercase;margin-bottom:14px;font-family:'DM Mono',monospace}
+.lbl{font-size:12px;color:var(--c-text2);display:block;margin-bottom:5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--c-border2);cursor:pointer;background:var(--c-bg3);color:var(--c-text2);transition:all .18s}
+.chip:hover{border-color:var(--c-teal);color:var(--c-teal)}
+.chip.on{background:var(--c-teal);border-color:var(--c-teal);color:#0f1a18;font-weight:600}
+.cdesc{font-size:11px;color:var(--c-text3);margin-top:10px;padding:8px 12px;background:var(--c-bg3);border-radius:var(--rad-sm);border-left:3px solid var(--c-teal);line-height:1.6}
+.rrow{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.rlbl{font-size:12px;color:var(--c-text2);min-width:110px}
+.rout{font-size:13px;font-weight:600;min-width:55px;text-align:right;color:var(--c-teal);font-family:'DM Mono',monospace}
+.re{display:flex;justify-content:space-between;font-size:11px;color:var(--c-text3);margin-bottom:10px}
+input[type=range]{flex:1;accent-color:var(--c-teal);cursor:pointer}
+input[type=number]{width:100%;padding:7px 10px;border:1px solid var(--c-border2);border-radius:var(--rad-sm);background:var(--c-bg3);color:var(--c-text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color .2s;outline:none}
+input[type=number]:focus{border-color:var(--c-teal)}
+input[type=text]{width:100%;padding:9px 12px;border:1px solid var(--c-border2);border-radius:var(--rad-sm);background:var(--c-bg3);color:var(--c-text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color .2s;outline:none}
+input[type=text]:focus{border-color:var(--c-teal)}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--c-border)}
+.trow:last-child{border-bottom:none;padding-bottom:0}
+.ti{display:flex;flex-direction:column;gap:2px}
+.tt{font-size:13px;font-weight:500;color:var(--c-text)}
+.ts{font-size:11px;color:var(--c-text3)}
+.tp{color:var(--c-teal)}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--c-border2);border-radius:11px;cursor:pointer;transition:.25s}
+.sl:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s}
+input:checked+.sl{background:var(--c-teal)}
+input:checked+.sl:before{transform:translateX(18px)}
+.rp{background:var(--c-bg2);border-radius:var(--rad);padding:1.25rem;margin-bottom:12px;border:1px solid var(--c-border)}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--c-border);font-size:12px;color:var(--c-text2)}
+.sr:last-child{border-bottom:none}
+.sv{font-size:12px;color:var(--c-text);font-weight:500;font-family:'DM Mono',monospace}
+.hl{color:var(--c-teal)}
+.yl{color:var(--c-yellow)}
+.scg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.scc{border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center;background:var(--c-bg3)}
+.scc.rec{border-color:var(--c-teal);background:var(--c-teal-dim)}
+.scl{font-size:9px;color:var(--c-text3);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace}
+.scp{font-size:17px;font-weight:600;margin:5px 0;color:var(--c-text);font-family:'DM Mono',monospace}
+.scc.rec .scp{color:var(--c-teal)}
+.scs{font-size:10px;color:var(--c-text3)}
+.bmo{height:6px;background:var(--c-bg3);border-radius:3px;position:relative;margin:10px 0;border:1px solid var(--c-border)}
+.bmf{height:100%;background:linear-gradient(90deg,var(--c-teal-d),var(--c-teal));border-radius:3px}
+.bmp{position:absolute;top:-7px;width:8px;height:20px;background:var(--c-bg);border:2px solid var(--c-teal);border-radius:3px;transform:translateX(-4px);transition:left .3s}
+.bml{display:flex;justify-content:space-between;font-size:10px;color:var(--c-text3);margin-top:4px}
+.cpb{width:100%;padding:11px;border:1px solid var(--c-border2);border-radius:var(--rad-sm);background:var(--c-bg3);color:var(--c-text);font-size:12px;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.02em}
+.cpb:hover{background:var(--c-teal);border-color:var(--c-teal);color:#0f1a18}
+.save-row{display:flex;gap:8px;margin-bottom:8px}
+.save-row input{flex:1}
+.save-btn{width:40px;height:40px;border-radius:var(--rad-sm);border:1px solid var(--c-border2);background:var(--c-bg3);color:var(--c-teal);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.save-btn:hover{background:var(--c-teal);color:#0f1a18;border-color:var(--c-teal)}
+.save-btn svg{width:16px;height:16px}
+.saved-list{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.saved-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--c-bg3);border-radius:var(--rad-sm);border:1px solid var(--c-border);font-size:12px;color:var(--c-text2)}
+.saved-item-name{font-weight:500;color:var(--c-text)}
+.saved-item-price{font-family:'DM Mono',monospace;color:var(--c-teal);font-size:12px}
+.saved-del{background:none;border:none;color:var(--c-text3);cursor:pointer;font-size:14px;padding:0 4px;transition:color .2s}
+.saved-del:hover{color:var(--c-red)}
+.mblk{display:none}.mblk.on{display:block}
+.pb{background:var(--c-bg2);border:1px solid var(--c-border);border-radius:var(--rad);padding:1.5rem;text-align:center;margin-bottom:12px}
+.pb-big{font-size:36px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace}
+.rb{display:inline-block;font-size:11px;padding:3px 10px;border-radius:10px;background:var(--c-bg3);color:var(--c-text3);margin-top:6px;border:1px solid var(--c-border);font-family:'DM Mono',monospace}
+.tarifa-big{font-size:44px;font-weight:600;color:var(--c-teal);text-align:center;padding:.75rem 0;font-family:'DM Mono',monospace;letter-spacing:-.02em}
+.tarifa-note{text-align:center;font-size:11px;color:var(--c-text3);margin-top:2px}
+.tarifa-anual{text-align:center;font-size:12px;color:var(--c-text2);margin-top:4px;font-family:'DM Mono',monospace}
+.str{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--c-border)}
+.str:last-child{border-bottom:none}
+.how-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--c-border)}
+.how-step:last-child{border-bottom:none}
+.how-num{min-width:24px;height:24px;border-radius:50%;background:var(--c-teal);color:#0f1a18;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'DM Mono',monospace}
+.how-text{font-size:12px;color:var(--c-text2);line-height:1.6}
+.how-text strong{color:var(--c-text);font-weight:600}
+.svc-summary{background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem 1rem;margin-bottom:8px}
+.svc-summary-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.svc-summary-name{font-size:13px;font-weight:600;color:var(--c-text)}
+.svc-summary-price{font-size:14px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace}
+.svc-summary-params{display:flex;flex-wrap:wrap;gap:5px}
+.param-tag{font-size:11px;padding:2px 8px;border-radius:8px;background:var(--c-bg2);color:var(--c-text3);border:1px solid var(--c-border)}
+.goto-btn{font-size:11px;color:var(--c-teal);cursor:pointer;background:none;border:none;padding:0;margin-top:6px;text-decoration:underline;text-underline-offset:2px;font-family:'DM Sans',sans-serif}
+.dto-card{background:linear-gradient(135deg,#1a2e2b 0%,#1e3530 100%);border:1px solid var(--c-teal-d);border-radius:var(--rad);padding:1.25rem;margin-bottom:12px}
+.dto-card .sec{color:var(--c-teal)}
+.dto-val{font-size:28px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace;text-align:right;min-width:60px}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-weight:500}
+.badge-warn{background:rgba(253,218,99,.15);color:var(--c-yellow)}
+.badge-info{background:rgba(113,195,180,.15);color:var(--c-teal)}
+.badge-ok{background:rgba(113,195,180,.2);color:#71c3b4}
+@media(max-width:768px){.g2{grid-template-columns:1fr}.g3{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="tabs" id="mtabs">
+  <div class="tab on" data-t="meta">Meta Ads</div>
+  <div class="tab" data-t="linkedin">LinkedIn Ads</div>
+  <div class="tab" data-t="estrategia">Estrategia</div>
+  <div class="tab" data-t="auditoria">Auditoría</div>
+  <div class="tab" data-t="consultoria">Consultoría</div>
+  <div class="tab" data-t="combinado">Combinado</div>
+</div>
+
+<!-- META ADS -->
+<div id="pane-meta" class="pane on">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card">
+    <div class="sec">Parámetros del cliente</div>
+    <div style="margin-bottom:14px">
+      <span class="lbl">Presupuesto mensual</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="m-pres" min="0" value="500" style="max-width:130px">
+        <span style="font-size:12px;color:var(--c-text3)">€/mes</span>
+        <span id="m-badge" class="badge badge-warn">Bajo</span>
+      </div>
+    </div>
+    <div class="g3">
+      <div><span class="lbl">Plataformas</span><input type="number" id="m-plat" min="1" max="10" value="1"></div>
+      <div><span class="lbl">Cuentas</span><input type="number" id="m-cuen" min="1" max="20" value="1"></div>
+      <div><span class="lbl">Campañas</span><input type="number" id="m-camp" min="1" max="20" value="1"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Dedicación estimada</div>
+    <div class="rrow"><span class="rlbl">Horas/mes</span><input type="range" id="m-horas" min="5" max="80" step="1" value="10"><span class="rout" id="m-horas-v">10h</span></div>
+    <div class="re"><span>5h</span><span>80h</span></div>
+    <span class="lbl">Complejidad</span>
+    <div class="chips" id="m-comp">
+      <div class="chip on" data-v="basica">Básica</div>
+      <div class="chip" data-v="media">Media</div>
+      <div class="chip" data-v="alta">Alta</div>
+      <div class="chip" data-v="muy_alta">Muy alta</div>
+    </div>
+    <div id="m-cdesc" class="cdesc">Cuenta bastante ordenada, pocas campañas, pocas variaciones, poco reporting, pocas incidencias.</div>
+    <div style="margin-top:14px">
+      <div class="trow"><div class="ti"><span class="tt">Creatividades</span><span class="ts">+<span id="m-crp" class="tp">€100</span>/mes</span></div><label class="toggle"><input type="checkbox" id="m-creat"><span class="sl"></span></label></div>
+      <div class="trow"><div class="ti"><span class="tt">Reporting avanzado</span><span class="ts">+<span id="m-rrp" class="tp">€300</span>/mes</span></div><label class="toggle"><input type="checkbox" id="m-report"><span class="sl"></span></label></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="rrow"><span class="rlbl">Llamadas/mes</span><input type="range" id="m-llam" min="0" max="8" step="1" value="2"><span class="rout" id="m-llam-v">2/mes</span></div>
+      <div class="re"><span>0</span><span>8</span></div>
+      <div style="font-size:11px;color:var(--c-text3);margin-top:-6px">· <span id="m-llami" style="color:var(--c-teal);font-weight:500">incluidas</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Modelo de pricing</div>
+    <div class="chips" id="m-precio">
+      <div class="chip on" data-v="fijo">Fee fijo mensual</div>
+      <div class="chip" data-v="pct">% sobre presupuesto</div>
+      <div class="chip" data-v="mixto">Fee fijo + % variable</div>
+      <div class="chip" data-v="hora">Por hora</div>
+    </div>
+    <div id="m-b-fijo" class="mblk on" style="margin-top:14px">
+      <div class="rrow"><span class="rlbl">Margen objetivo</span><input type="range" id="m-marg" min="15" max="80" step="1" value="40"><span class="rout" id="m-marg-v">40%</span></div>
+      <div class="re"><span>15%</span><span>80%</span></div>
+      <div style="font-size:11px;color:var(--c-text3);margin-top:-4px">Tarifa = coste / (1 − margen)</div>
+    </div>
+    <div id="m-b-pct" class="mblk" style="margin-top:14px">
+      <div class="rrow"><span class="rlbl">% inversión</span><input type="range" id="m-pct" min="0" max="30" step="1" value="15"><span class="rout" id="m-pct-v">15%</span></div>
+      <div class="re"><span>0%</span><span>30%</span></div>
+      <div style="font-size:11px;color:var(--c-text3);margin-top:-4px">Tarifa = presupuesto × % + extras</div>
+    </div>
+    <div id="m-b-mixto" class="mblk" style="margin-top:14px">
+      <div style="font-size:12px;color:var(--c-text2);margin-bottom:8px" id="m-flbl">Fee fijo básica: €500</div>
+      <div class="rrow"><span class="rlbl">% variable</span><input type="range" id="m-pmix" min="5" max="50" step="1" value="15"><span class="rout" id="m-pmix-v">15%</span></div>
+      <div class="re"><span>5%</span><span>50%</span></div>
+    </div>
+    <div id="m-b-hora" class="mblk" style="margin-top:14px">
+      <div style="background:var(--c-bg3);border-radius:var(--rad-sm);padding:.85rem;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--c-border)">
+        <span style="font-size:12px;color:var(--c-text2)">Tarifa por hora</span>
+        <span style="font-size:20px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="m-hrate">€55/h</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Simulador</div>
+    <div id="m-sh-row" class="rrow"><span class="rlbl">Delta horas</span><input type="range" id="m-sh" min="-15" max="15" step="1" value="0"><span class="rout" id="m-sh-v" style="font-size:11px;min-width:90px"></span></div>
+    <div id="m-sh-re" class="re"><span>-15h</span><span>+15h</span></div>
+    <div id="m-sm-row" class="rrow"><span class="rlbl" id="m-slbl">Delta margen</span><input type="range" id="m-sm" min="-20" max="20" step="1" value="0"><span class="rout" id="m-sm-v" style="font-size:11px;min-width:90px"></span></div>
+    <div id="m-sm-re" class="re"><span id="m-smin">-20%</span><span id="m-smax">+20%</span></div>
+    <div class="g3" style="margin-top:8px">
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Tarifa sim.</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="m-simt">—</div></div>
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em" id="m-smid">Ref.</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="m-simm">—</div></div>
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Anual</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="m-sima">—</div></div>
+    </div>
+  </div>
+</div>
+<div>
+  <div class="rp">
+    <div class="sec">Tarifa recomendada — Meta Ads</div>
+    <div class="tarifa-big" id="m-tarifa">€650</div>
+    <div class="tarifa-note">/ mes — IVA no incluido</div>
+    <div class="tarifa-anual" id="m-anual">€7.800 / año</div>
+    <div style="margin-top:16px">
+      <div class="sr"><span id="m-clbl">Coste hora implícito</span><span class="sv hl" id="m-chi">—</span></div>
+      <div class="sr"><span>Horas cubiertas</span><span class="sv" id="m-hc">10h/mes</span></div>
+      <div class="sr"><span id="m-cblbl">Coste base</span><span class="sv" id="m-cb">—</span></div>
+      <div class="sr"><span>% sobre presupuesto</span><span class="sv" id="m-pp">—</span></div>
+      <div class="sr"><span>Extra llamadas</span><span class="sv" id="m-ell">—</span></div>
+      <div class="sr"><span>Extra campañas</span><span class="sv" id="m-ecamp">—</span></div>
+      <div class="sr"><span>Extra creatividades</span><span class="sv" id="m-ecr">—</span></div>
+      <div class="sr"><span>Extra reporting</span><span class="sv" id="m-erp">—</span></div>
+      <div class="sr"><span id="m-mlbl" style="font-weight:600;color:var(--c-text)">Margen</span><span style="font-size:14px;font-weight:600;font-family:'DM Mono',monospace;color:var(--c-teal)" id="m-mb">—</span></div>
+    </div>
+  </div>
+  <div class="rp"><div class="sec">Benchmark · Meta Ads</div><div style="font-size:12px;color:var(--c-text2);margin-bottom:8px;font-family:'DM Mono',monospace">€600 — €2.500 / mes</div><div class="bmo"><div class="bmf" style="width:100%"></div><div class="bmp" id="m-bmp"></div></div><div class="bml"><span>Bajo</span><span style="color:var(--c-teal);font-weight:600">Tu tarifa</span><span>Premium</span></div><div style="margin-top:6px;font-size:11px;color:var(--c-teal)" id="m-bpos">●</div></div>
+  <div class="rp"><div class="sec">Escenarios</div><div class="scg"><div class="scc"><div class="scl">Conservador</div><div class="scp" id="m-sc1">—</div><div class="scs" id="m-ss1">—</div></div><div class="scc rec"><div class="scl">Recomendado</div><div class="scp" id="m-sc2">—</div><div class="scs" id="m-ss2">—</div></div><div class="scc"><div class="scl">Premium</div><div class="scp" id="m-sc3">—</div><div class="scs" id="m-ss3">—</div></div></div><div style="position:relative;height:100px;margin-top:14px"><canvas id="m-ch"></canvas></div></div>
+  <div class="rp"><div class="sec">Guardar propuesta</div><div class="save-row"><input type="text" id="m-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="m-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="m-saved"></div><button class="cpb" id="m-btn">Copiar propuesta</button></div>
+</div>
+</div>
+</div>
+
+<!-- LINKEDIN ADS -->
+<div id="pane-linkedin" class="pane">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card">
+    <div class="sec">Parámetros del cliente</div>
+    <div style="margin-bottom:14px"><span class="lbl">Presupuesto mensual</span><div style="display:flex;align-items:center;gap:8px"><input type="number" id="l-pres" min="0" value="500" style="max-width:130px"><span style="font-size:12px;color:var(--c-text3)">€/mes</span><span id="l-badge" class="badge badge-warn">Bajo</span></div></div>
+    <div class="g3"><div><span class="lbl">Plataformas</span><input type="number" id="l-plat" min="1" max="10" value="1"></div><div><span class="lbl">Cuentas</span><input type="number" id="l-cuen" min="1" max="20" value="1"></div><div><span class="lbl">Campañas</span><input type="number" id="l-camp" min="1" max="20" value="1"></div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Dedicación estimada</div>
+    <div class="rrow"><span class="rlbl">Horas/mes</span><input type="range" id="l-horas" min="5" max="80" step="1" value="10"><span class="rout" id="l-horas-v">10h</span></div>
+    <div class="re"><span>5h</span><span>80h</span></div>
+    <span class="lbl">Complejidad</span>
+    <div class="chips" id="l-comp"><div class="chip on" data-v="basica">Básica</div><div class="chip" data-v="media">Media</div><div class="chip" data-v="alta">Alta</div><div class="chip" data-v="muy_alta">Muy alta</div></div>
+    <div id="l-cdesc" class="cdesc">Cuenta bastante ordenada, pocas campañas, pocas variaciones, poco reporting, pocas incidencias.</div>
+    <div style="margin-top:14px">
+      <div class="trow"><div class="ti"><span class="tt">Creatividades</span><span class="ts">+<span id="l-crp" class="tp">€100</span>/mes</span></div><label class="toggle"><input type="checkbox" id="l-creat"><span class="sl"></span></label></div>
+      <div class="trow"><div class="ti"><span class="tt">Reporting avanzado</span><span class="ts">+<span id="l-rrp" class="tp">€300</span>/mes</span></div><label class="toggle"><input type="checkbox" id="l-report"><span class="sl"></span></label></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="rrow"><span class="rlbl">Llamadas/mes</span><input type="range" id="l-llam" min="0" max="8" step="1" value="2"><span class="rout" id="l-llam-v">2/mes</span></div>
+      <div class="re"><span>0</span><span>8</span></div>
+      <div style="font-size:11px;color:var(--c-text3);margin-top:-6px">· <span id="l-llami" style="color:var(--c-teal);font-weight:500">incluidas</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">Modelo de pricing</div>
+    <div class="chips" id="l-precio"><div class="chip on" data-v="fijo">Fee fijo mensual</div><div class="chip" data-v="pct">% sobre presupuesto</div><div class="chip" data-v="mixto">Fee fijo + % variable</div><div class="chip" data-v="hora">Por hora</div></div>
+    <div id="l-b-fijo" class="mblk on" style="margin-top:14px"><div class="rrow"><span class="rlbl">Margen objetivo</span><input type="range" id="l-marg" min="15" max="80" step="1" value="40"><span class="rout" id="l-marg-v">40%</span></div><div class="re"><span>15%</span><span>80%</span></div></div>
+    <div id="l-b-pct" class="mblk" style="margin-top:14px"><div class="rrow"><span class="rlbl">% inversión</span><input type="range" id="l-pct" min="0" max="30" step="1" value="15"><span class="rout" id="l-pct-v">15%</span></div><div class="re"><span>0%</span><span>30%</span></div></div>
+    <div id="l-b-mixto" class="mblk" style="margin-top:14px"><div style="font-size:12px;color:var(--c-text2);margin-bottom:8px" id="l-flbl">Fee fijo básica: €500</div><div class="rrow"><span class="rlbl">% variable</span><input type="range" id="l-pmix" min="5" max="50" step="1" value="15"><span class="rout" id="l-pmix-v">15%</span></div><div class="re"><span>5%</span><span>50%</span></div></div>
+    <div id="l-b-hora" class="mblk" style="margin-top:14px"><div style="background:var(--c-bg3);border-radius:var(--rad-sm);padding:.85rem;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--c-border)"><span style="font-size:12px;color:var(--c-text2)">Tarifa por hora</span><span style="font-size:20px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="l-hrate">€55/h</span></div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Simulador</div>
+    <div id="l-sh-row" class="rrow"><span class="rlbl">Delta horas</span><input type="range" id="l-sh" min="-15" max="15" step="1" value="0"><span class="rout" id="l-sh-v" style="font-size:11px;min-width:90px"></span></div>
+    <div id="l-sh-re" class="re"><span>-15h</span><span>+15h</span></div>
+    <div id="l-sm-row" class="rrow"><span class="rlbl" id="l-slbl">Delta margen</span><input type="range" id="l-sm" min="-20" max="20" step="1" value="0"><span class="rout" id="l-sm-v" style="font-size:11px;min-width:90px"></span></div>
+    <div id="l-sm-re" class="re"><span id="l-smin">-20%</span><span id="l-smax">+20%</span></div>
+    <div class="g3" style="margin-top:8px">
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Tarifa sim.</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="l-simt">—</div></div>
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em" id="l-smid">Ref.</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="l-simm">—</div></div>
+      <div style="background:var(--c-bg3);border:1px solid var(--c-border);border-radius:var(--rad-sm);padding:.85rem;text-align:center"><div style="font-size:10px;color:var(--c-text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Anual</div><div style="font-size:16px;font-weight:600;color:var(--c-teal);font-family:'DM Mono',monospace" id="l-sima">—</div></div>
+    </div>
+  </div>
+</div>
+<div>
+  <div class="rp"><div class="sec">Tarifa recomendada — LinkedIn Ads</div><div class="tarifa-big" id="l-tarifa">—</div><div class="tarifa-note">/ mes — IVA no incluido</div><div class="tarifa-anual" id="l-anual">—</div><div style="margin-top:16px"><div class="sr"><span id="l-clbl">Coste hora implícito</span><span class="sv hl" id="l-chi">—</span></div><div class="sr"><span>Horas cubiertas</span><span class="sv" id="l-hc">10h/mes</span></div><div class="sr"><span id="l-cblbl">Coste base</span><span class="sv" id="l-cb">—</span></div><div class="sr"><span>% sobre presupuesto</span><span class="sv" id="l-pp">—</span></div><div class="sr"><span>Extra creatividades</span><span class="sv" id="l-ecr">—</span></div><div class="sr"><span>Extra reporting</span><span class="sv" id="l-erp">—</span></div><div class="sr"><span id="l-mlbl" style="font-weight:600;color:var(--c-text)">Margen</span><span style="font-size:14px;font-weight:600;font-family:'DM Mono',monospace;color:var(--c-teal)" id="l-mb">—</span></div></div></div>
+  <div class="rp"><div class="sec">Benchmark · LinkedIn Ads</div><div style="font-size:12px;color:var(--c-text2);margin-bottom:8px;font-family:'DM Mono',monospace">€800 — €3.000 / mes</div><div class="bmo"><div class="bmf" style="width:100%"></div><div class="bmp" id="l-bmp"></div></div><div class="bml"><span>Bajo</span><span style="color:var(--c-teal);font-weight:600">Tu tarifa</span><span>Premium</span></div><div style="margin-top:6px;font-size:11px;color:var(--c-teal)" id="l-bpos">●</div></div>
+  <div class="rp"><div class="sec">Escenarios</div><div class="scg"><div class="scc"><div class="scl">Conservador</div><div class="scp" id="l-sc1">—</div><div class="scs" id="l-ss1">—</div></div><div class="scc rec"><div class="scl">Recomendado</div><div class="scp" id="l-sc2">—</div><div class="scs" id="l-ss2">—</div></div><div class="scc"><div class="scl">Premium</div><div class="scp" id="l-sc3">—</div><div class="scs" id="l-ss3">—</div></div></div><div style="position:relative;height:100px;margin-top:14px"><canvas id="l-ch"></canvas></div></div>
+  <div class="rp"><div class="sec">Guardar propuesta</div><div class="save-row"><input type="text" id="l-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="l-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="l-saved"></div><button class="cpb" id="l-btn">Copiar propuesta</button></div>
+</div>
+</div>
+</div>
+
+<!-- ESTRATEGIA -->
+<div id="pane-estrategia" class="pane">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card"><div class="sec">Nivel de estrategia</div><div class="chips" id="e-comp"><div class="chip on" data-v="basica">Básica</div><div class="chip" data-v="media">Media</div><div class="chip" data-v="alta">Alta</div><div class="chip" data-v="muy_alta">Muy alta</div></div><div id="e-cdesc" class="cdesc" style="margin-top:10px">Campaña sencilla, objetivo claro, poco riesgo técnico.</div></div>
+  <div class="card"><div class="sec">Guardar propuesta</div><div class="save-row"><input type="text" id="e-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="e-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="e-saved"></div><button class="cpb" id="e-btn">Copiar propuesta</button></div>
+</div>
+<div>
+  <div class="pb"><div style="font-size:11px;color:var(--c-text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Precio recomendado (medio)</div><div class="pb-big" id="e-precio">€450</div><div style="font-size:11px;color:var(--c-text3);margin-top:4px">Proyecto único · IVA no incluido</div><div class="rb" id="e-rango">€350–€600</div></div>
+  <div class="rp"><div class="sec">Benchmark</div><div style="font-size:12px;color:var(--c-text2);margin-bottom:8px;font-family:'DM Mono',monospace">€500 — €2.000 / proyecto</div><div class="bmo"><div class="bmf" style="width:100%"></div><div class="bmp" id="e-bmp"></div></div><div class="bml"><span>Bajo</span><span style="color:var(--c-teal);font-weight:600">Tu precio</span><span>Premium</span></div><div style="margin-top:6px;font-size:11px;color:var(--c-teal)" id="e-bpos">●</div></div>
+  <div class="rp"><div class="sec">Qué incluye</div><pre id="e-inc" style="font-size:12px;color:var(--c-text2);line-height:1.8;white-space:pre-wrap;font-family:'DM Sans',sans-serif">—</pre></div>
+</div>
+</div>
+</div>
+
+<!-- AUDITORÍA -->
+<div id="pane-auditoria" class="pane">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card"><div class="sec">Nivel de auditoría</div><div class="chips" id="a-comp"><div class="chip on" data-v="basica">Básica</div><div class="chip" data-v="media">Media</div><div class="chip" data-v="alta">Alta</div><div class="chip" data-v="muy_alta">Muy alta</div></div><div id="a-cdesc" class="cdesc" style="margin-top:10px">1 cuenta, 1 objetivo, pocas campañas, poco histórico.</div></div>
+  <div class="card"><div class="sec">Guardar propuesta</div><div class="save-row"><input type="text" id="a-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="a-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="a-saved"></div><button class="cpb" id="a-btn">Copiar propuesta</button></div>
+</div>
+<div>
+  <div class="pb"><div style="font-size:11px;color:var(--c-text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Precio recomendado (medio)</div><div class="pb-big" id="a-precio">€350</div><div style="font-size:11px;color:var(--c-text3);margin-top:4px">Proyecto único · IVA no incluido</div><div class="rb" id="a-rango">€250–€450</div></div>
+  <div class="rp"><div class="sec">Benchmark</div><div style="font-size:12px;color:var(--c-text2);margin-bottom:8px;font-family:'DM Mono',monospace">€250 — €2.000+ / proyecto</div><div class="bmo"><div class="bmf" style="width:100%"></div><div class="bmp" id="a-bmp"></div></div><div class="bml"><span>Básica</span><span style="color:var(--c-teal);font-weight:600">Tu precio</span><span>Muy alta</span></div><div style="margin-top:6px;font-size:11px;color:var(--c-teal)" id="a-bpos">● Rango básico</div></div>
+  <div class="rp"><div class="sec">Qué incluye</div><pre id="a-inc" style="font-size:12px;color:var(--c-text2);line-height:1.8;white-space:pre-wrap;font-family:'DM Sans',sans-serif">—</pre></div>
+</div>
+</div>
+</div>
+
+<!-- CONSULTORÍA -->
+<div id="pane-consultoria" class="pane">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card"><div class="sec">Nivel de consultoría</div><div class="chips" id="c-comp"><div class="chip on" data-v="basica">Básica</div><div class="chip" data-v="media">Media</div><div class="chip" data-v="alta">Alta</div><div class="chip" data-v="muy_alta">Muy alta</div></div><div id="c-cdesc" class="cdesc" style="margin-top:10px">Dudas puntuales, revisión ligera. 1 sesión 60-90 min.</div></div>
+  <div class="card"><div class="sec">Guardar propuesta</div><div class="save-row"><input type="text" id="c-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="c-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="c-saved"></div><button class="cpb" id="c-btn">Copiar propuesta</button></div>
+</div>
+<div>
+  <div class="g2" style="gap:12px;margin-bottom:12px">
+    <div class="pb" style="margin-bottom:0"><div style="font-size:11px;color:var(--c-text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Por hora</div><div class="pb-big" id="c-hora">€80/h</div><div class="rb" id="c-horar">€70–€90/h</div></div>
+    <div class="pb" style="margin-bottom:0"><div style="font-size:11px;color:var(--c-text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace">Por proyecto</div><div class="pb-big" id="c-proy">€225</div><div class="rb" id="c-proyr">€150–€300</div></div>
+  </div>
+  <div class="rp"><div class="sec">Qué incluye</div><div id="c-inc" style="font-size:12px;color:var(--c-text2);line-height:1.7">—</div></div>
+</div>
+</div>
+</div>
+
+<!-- COMBINADO -->
+<div id="pane-combinado" class="pane">
+<div class="g2" style="align-items:start">
+<div>
+  <div class="card">
+    <div class="sec">Cómo usar el combinado</div>
+    <div style="font-size:12px;color:var(--c-text2);margin-bottom:12px">Configura cada servicio en su pestaña y actívalo aquí para calcular el total con descuento automático.</div>
+    <div class="how-step"><div class="how-num">1</div><div class="how-text">Ve a cada pestaña (<strong>Meta Ads, LinkedIn, Estrategia, Auditoría, Consultoría</strong>) y configura los parámetros del servicio.</div></div>
+    <div class="how-step"><div class="how-num">2</div><div class="how-text">Vuelve aquí y <strong>activa los servicios</strong> que aplican a este cliente. Verás el resumen de parámetros de cada uno con botón de edición directo.</div></div>
+    <div class="how-step"><div class="how-num">3</div><div class="how-text">El <strong>descuento automático</strong> se aplica según número de servicios: 15% con 2, 22% con 3 o más. Meta + LinkedIn aplica además −15% en horas.</div></div>
+    <div class="how-step"><div class="how-num">4</div><div class="how-text">Ajusta el <strong>descuento adicional</strong> si quieres personalizar la oferta. Escribe el nombre del cliente y guarda o copia la propuesta.</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Servicios activos</div>
+    <div class="str"><div><div style="font-size:13px;font-weight:500;color:var(--c-text)">Meta Ads</div><div style="font-size:11px;color:var(--c-text3)">Tarifa mensual</div></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--c-teal);font-weight:600;font-family:'DM Mono',monospace" id="cb-mp">€650</span><label class="toggle"><input type="checkbox" id="cb-m" checked><span class="sl"></span></label></div></div>
+    <div class="str"><div><div style="font-size:13px;font-weight:500;color:var(--c-text)">LinkedIn Ads</div><div style="font-size:11px;color:var(--c-text3)">Tarifa mensual</div></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--c-teal);font-weight:600;font-family:'DM Mono',monospace" id="cb-lp">€650</span><label class="toggle"><input type="checkbox" id="cb-l"><span class="sl"></span></label></div></div>
+    <div class="str"><div><div style="font-size:13px;font-weight:500;color:var(--c-text)">Estrategia</div><div style="font-size:11px;color:var(--c-text3)">Proyecto puntual</div></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--c-teal);font-weight:600;font-family:'DM Mono',monospace" id="cb-ep">€450</span><label class="toggle"><input type="checkbox" id="cb-e"><span class="sl"></span></label></div></div>
+    <div class="str"><div><div style="font-size:13px;font-weight:500;color:var(--c-text)">Auditoría</div><div style="font-size:11px;color:var(--c-text3)">Proyecto puntual</div></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--c-teal);font-weight:600;font-family:'DM Mono',monospace" id="cb-ap">€350</span><label class="toggle"><input type="checkbox" id="cb-a"><span class="sl"></span></label></div></div>
+    <div class="str"><div><div style="font-size:13px;font-weight:500;color:var(--c-text)">Consultoría</div><div style="font-size:11px;color:var(--c-text3)">Proyecto / sesión</div></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--c-teal);font-weight:600;font-family:'DM Mono',monospace" id="cb-cp">€225</span><label class="toggle"><input type="checkbox" id="cb-c"><span class="sl"></span></label></div></div>
+  </div>
+  <div class="dto-card">
+    <div class="sec">Descuento adicional personalizado</div>
+    <div class="rrow" style="gap:12px;margin-bottom:6px"><input type="range" id="cb-dto-extra" min="0" max="40" step="1" value="0" style="flex:1;accent-color:var(--c-teal)"><span class="dto-val" id="cb-dto-extra-v">0%</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--c-text3);margin-bottom:10px"><span>Sin descuento adicional</span><span>−40%</span></div>
+    <div style="font-size:11px;color:var(--c-text3)">Se aplica sobre el subtotal después del descuento automático.</div>
+  </div>
+  <div class="card"><div class="sec">Guardar propuesta combinada</div><div class="save-row"><input type="text" id="cb-cli" placeholder="Nombre del cliente / propuesta"><button class="save-btn" id="cb-save" title="Guardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg></button></div><div class="saved-list" id="cb-saved"></div><button class="cpb" id="cb-btn">Copiar propuesta</button></div>
+</div>
+<div>
+  <div class="rp"><div class="sec">Total combinado</div><div class="tarifa-big" id="cb-tot">€650</div><div class="tarifa-note" id="cb-dlbl">Sin descuento</div><div style="margin-top:16px"><div class="sr"><span>Suma sin descuento</span><span class="sv" id="cb-sum">€650</span></div><div class="sr" id="cb-row-auto"><span>Descuento automático</span><span class="sv hl" id="cb-dto-auto">—</span></div><div class="sr" id="cb-row-extra"><span>Descuento adicional</span><span class="sv yl" id="cb-dto-extra-lbl">—</span></div><div class="sr"><span>Ahorro total</span><span class="sv" id="cb-aho">—</span></div><div class="sr"><span style="font-weight:600;color:var(--c-text)">Total final</span><span style="font-size:15px;font-weight:600;font-family:'DM Mono',monospace;color:var(--c-teal)" id="cb-fin">€650</span></div></div></div>
+  <div class="rp"><div class="sec">Resumen de servicios configurados</div><div id="cb-resumen"><div style="font-size:12px;color:var(--c-text3);padding:8px 0">Activa servicios para ver el resumen.</div></div></div>
+  <div class="rp"><div class="sec">Desglose de precios</div><div id="cb-des"><div style="font-size:12px;color:var(--c-text3)">—</div></div></div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var CI={basica:{rate:55,desc:'Cuenta bastante ordenada, pocas campañas, pocas variaciones, poco reporting, pocas incidencias.'},media:{rate:75,desc:'Más campañas activas, más control, algo de testing, más seguimiento y más lectura.'},alta:{rate:80,desc:'Varias campañas, varios conjuntos, rotación de creatividades, análisis frecuente, decisiones estratégicas más constantes.'},muy_alta:{rate:100,desc:'Cuenta exigente, mucha fricción, más interlocución, más reporting, más soporte, más criterio senior.'}};
+var AT40={basica:[{h:5,t:400},{h:10,t:650},{h:45,t:2610},{h:80,t:4240}],media:[{h:5,t:480},{h:10,t:750},{h:45,t:2790},{h:80,t:4880}],alta:[{h:5,t:600},{h:10,t:950},{h:45,t:3510},{h:80,t:6400}],muy_alta:[{h:5,t:720},{h:10,t:1100},{h:45,t:4365},{h:80,t:7680}]};
+var FF={basica:500,media:750,alta:1050,muy_alta:1500};var FL={basica:'€500',media:'€750',alta:'€1.050',muy_alta:'€1.500'};var CL={basica:'Básica',media:'Media',alta:'Alta',muy_alta:'Muy Alta'};var ECR={basica:100,media:150,alta:100,muy_alta:150};var ERP={basica:300,media:350,alta:300,muy_alta:350};
+var LD=[{n:0,d:-200},{n:1,d:-100},{n:2,d:0},{n:3,d:50},{n:4,d:150},{n:5,d:250},{n:6,d:300},{n:7,d:400},{n:8,d:500}];
+var MSC=[{m:15,mC:15,mP:32},{m:20,mC:15,mP:37},{m:25,mC:15,mP:42},{m:30,mC:17,mP:47},{m:35,mC:22,mP:52},{m:40,mC:27,mP:57},{m:45,mC:31,mP:61},{m:50,mC:34,mP:64},{m:55,mC:40,mP:70},{m:60,mC:45,mP:75},{m:65,mC:50,mP:75},{m:70,mC:55,mP:75},{m:75,mC:60,mP:75},{m:80,mC:65,mP:75}];
+var ES={basica:{precio:450,rango:'€350–€600',desc:'Campaña sencilla, objetivo claro, poco riesgo técnico.',inc:'· Análisis del objetivo\n· Definición de público principal\n· Estructura básica\n· Propuesta de presupuesto\n· 2-3 ángulos de mensaje\n· Recomendaciones de creatividades\n· KPIs básicos'},media:{precio:800,rango:'€600–€1.000',desc:'Campañas con más intención estratégica y testing.',inc:'· Buyer persona\n· Públicos frío/templado/remarketing\n· Estructura completa\n· Distribución presupuestaria\n· Hipótesis de testing\n· KPIs por fase\n· Calendario de activación'},alta:{precio:1300,rango:'€1.000–€1.800',desc:'Hay embudo, seguimiento, creatividad y decisiones delicadas.',inc:'· Análisis de situación\n· Buyer persona trabajado\n· Ángulos principales y secundarios\n· Estructura por fases\n· Plan de creatividades\n· Medición, eventos, UTMs\n· Roadmap 30 días'},muy_alta:{precio:2400,rango:'€1.800–€3.500',desc:'Proyectos complejos. La estrategia ordena el sistema comercial/publicitario.',inc:'· Diagnóstico completo\n· Análisis profundo de públicos\n· Arquitectura completa\n· Estrategia creativa por ángulos\n· Narrativa del funnel\n· Alineación CRM\n· Roadmap 30/60/90 días\n· Documento + sesión de presentación'}};
+var AU={basica:{precio:350,rango:'€250–€450',desc:'1 cuenta, 1 objetivo, pocas campañas, poco histórico.',inc:'· Estructura\n· Objetivo\n· Campañas\n· Públicos\n· Métricas principales\n· Errores evidentes\n· Checklist comentado'},media:{precio:600,rango:'€450–€750',desc:'Cuentas con más miga. Análisis del por qué y qué tocar primero.',inc:'· Varias campañas y públicos\n· Revisión anuncios y creatividades\n· Revisión básica Pixel/eventos\n· Lectura de embudo\n· Recomendaciones priorizadas'},alta:{precio:950,rango:'€750–€1.200',desc:'Cuentas exigentes con problemas de rendimiento.',inc:'· Varias campañas y conjuntos\n· Revisión tracking, eventos, UTMs\n· Análisis creatividades y mensajes\n· Lectura de funnel\n· Benchmarking interno\n· Plan de acción por fases'},muy_alta:{precio:1500,rango:'€1.200–€2.000',desc:'Cuentas complejas. Ecommerce, lead gen complejo o B2B.',inc:'· Mucho histórico\n· Varias líneas de negocio\n· Pixel/CAPI/eventos personalizados\n· Revisión landing/CRM\n· Análisis profundo creatividades\n· Sesión de presentación\n· Roadmap 30/60/90 días'}};
+var CO={basica:{hora:'€80/h',horaR:'€70–€90/h',proy:'€225',proyR:'€150–€300',desc:'Dudas puntuales, revisión ligera. 1 sesión 60-90 min.',inc:'Dudas concretas: estructura, objetivo, públicos, incidencias.'},media:{hora:'€105/h',horaR:'€90–€120/h',proy:'€500',proyR:'€300–€700',desc:'Revisión estratégica, estructura de campañas. 2-4h totales.',inc:'Revisión de cuenta · Lectura de métricas · Estructura recomendada · Prioridades de optimización.'},alta:{hora:'€140/h',horaR:'€120–€160/h',proy:'€1.100',proyR:'€700–€1.500',desc:'Estrategia completa, embudo, tracking. 5-10h totales.',inc:'Estrategia de campañas · Embudo · Análisis creatividad · Diagnóstico tracking · Plan de acción 30 días.'},muy_alta:{hora:'€205/h',horaR:'€160–€250/h',proy:'€2.250',proyR:'€1.500–€3.000',desc:'Consultoría senior, problemas complejos. 10-20h.',inc:'Varias líneas de negocio · CAPI/Pixel/CRM · Embudos complejos · Escalado · Roadmap 30/60/90 días.'}};
+var estado={meta:{tarifa:650,horas:10,comp:'basica',modelo:'fijo',marg:40,pct:15,pmix:15,pres:500,cr:false,rp:false,llam:2},linkedin:{tarifa:650,horas:10,comp:'basica',modelo:'fijo',marg:40,pct:15,pmix:15,pres:500,cr:false,rp:false,llam:2},estrategia:{tarifa:450,comp:'basica'},auditoria:{tarifa:350,comp:'basica'},consultoria:{tarifa:225,comp:'basica',hora:'€80/h',proy:'€225'}};
+var charts={};var savedProps={m:[],l:[],e:[],a:[],c:[],cb_:[]};
+function gi(id){return document.getElementById(id);}
+function gs(id,v){var el=gi(id);if(el)el.textContent=v;}
+function getChip(gid){var el=document.querySelector('#'+gid+' .chip.on');return el?el.dataset.v:'basica';}
+function getLlam(n){for(var i=0;i<LD.length;i++){if(LD[i].n===n)return LD[i].d;}return 0;}
+function getCB(h,comp){var an=AT40[comp]||AT40.basica,t40=an[an.length-1].t;for(var i=0;i<an.length-1;i++){if(h>=an[i].h&&h<=an[i+1].h){t40=Math.round(an[i].t+(an[i+1].t-an[i].t)*(h-an[i].h)/(an[i+1].h-an[i].h));break;}}return Math.round(t40*0.60);}
+function getEC(n,cr,rp){if(n<=3)return 0;var tot=0,act=(cr?1:0)+(rp?1:0);for(var i=4;i<=n;i++){var p=i-3;if(act===0)tot+=p%2===1?50:100;else if(act===1)tot+=p%2===1?100:50;else tot+=p===1?150:(p%2===0?100:50);}return tot;}
+function getMSC(m){for(var i=0;i<MSC.length-1;i++){if(m>=MSC[i].m&&m<=MSC[i+1].m){var t=(m-MSC[i].m)/(MSC[i+1].m-MSC[i].m);return{mC:Math.round(MSC[i].mC+(MSC[i+1].mC-MSC[i].mC)*t),mP:Math.round(MSC[i].mP+(MSC[i+1].mP-MSC[i].mP)*t)};}}return{mC:MSC[MSC.length-1].mC,mP:MSC[MSC.length-1].mP};}
+function updBM(v,mn,mx,pid,ppid){var pos=Math.min(98,Math.max(2,(v-mn)/(mx-mn)*100));gi(pid).style.left=pos+'%';gs(ppid,v<mn?'● Por debajo del mercado':v>mx?'● Sobre el mercado — premium':pos<35?'● Rango bajo del mercado':pos<65?'● Rango medio del mercado':'● Rango alto del mercado');}
+function updChart(id,data){var el=gi(id);if(!el)return;var ctx=el.getContext('2d');if(charts[id]){charts[id].data.datasets[0].data=data;charts[id].update();return;}charts[id]=new Chart(ctx,{type:'bar',data:{labels:['Conservador','Recomendado','Premium'],datasets:[{data:data,backgroundColor:['rgba(113,195,180,.3)','#71c3b4','rgba(113,195,180,.6)'],borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return'€'+v.toLocaleString('es-ES');},color:'#64697a'},grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false},ticks:{color:'#64697a',font:{size:10}}}}}});}
+function fmt(n){return'€'+n.toLocaleString('es-ES');}
+function saveProp(key,nombre,tarifa){if(!nombre.trim())return;var list=savedProps[key];list.unshift({nombre:nombre,tarifa:tarifa,ts:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})});if(list.length>5)list.pop();renderSaved(key);}
+function renderSaved(key){var listId=key==='cb_'?'cb-saved':key+'-saved';var el=gi(listId);if(!el)return;var html='';savedProps[key].forEach(function(p,i){html+='<div class="saved-item"><div><span class="saved-item-name">'+p.nombre+'</span><span style="font-size:10px;color:var(--c-text3);margin-left:6px">'+p.ts+'</span></div><div style="display:flex;align-items:center;gap:8px"><span class="saved-item-price">'+p.tarifa+'</span><button class="saved-del" data-key="'+key+'" data-i="'+i+'" title="Eliminar">×</button></div></div>';});el.innerHTML=html;el.querySelectorAll('.saved-del').forEach(function(btn){btn.addEventListener('click',function(){savedProps[btn.dataset.key].splice(parseInt(btn.dataset.i),1);renderSaved(btn.dataset.key);});});}
+document.querySelectorAll('#mtabs .tab').forEach(function(tab){tab.addEventListener('click',function(){document.querySelectorAll('#mtabs .tab').forEach(function(t){t.classList.remove('on');});tab.classList.add('on');document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on');});gi('pane-'+tab.dataset.t).classList.add('on');});});
+function setupChips(gid,cb){document.querySelectorAll('#'+gid+' .chip').forEach(function(chip){chip.addEventListener('click',function(){document.querySelectorAll('#'+gid+' .chip').forEach(function(c){c.classList.remove('on');});chip.classList.add('on');cb();});});}
+function calcAds(h,comp,plat,cuen,camp,llam,cr,rp,marg,modelo,pct,pmix,pres){var dL=getLlam(llam),ep=Math.max(0,plat-1)*250,ec=Math.max(0,cuen-1)*150;var ecamp=getEC(camp,cr,rp),ecr=cr?(ECR[comp]||100):0,erp=rp?(ERP[comp]||300):0;var tarifa,chi,cb,ecampR=ecamp,ecrR=ecr,erpR=erp,dLR=dL;if(modelo==='fijo'){var cbase=getCB(h,comp);var ct=cbase+Math.round(dL*0.60)+Math.round((ep+ec+ecamp+ecr+erp)*0.60);tarifa=Math.round(ct/(1-Math.min(marg,79)/100));chi=h>0?Math.round(tarifa/h):0;cb=ct;}else if(modelo==='pct'){var base=Math.round(pres*pct/100);tarifa=base+ecr+erp;chi=0;cb=base;ecampR=0;dLR=0;}else if(modelo==='mixto'){var fb=FF[comp]||500,vp=Math.round(pres*pmix/100);tarifa=fb+vp+ep+ec+ecamp+ecr+erp+Math.max(0,dL);chi=h>0?Math.round(tarifa/h):0;cb=fb;}else{var rate=CI[comp]?CI[comp].rate:55;tarifa=rate*h+ep+ec+ecamp+ecr+erp+Math.max(0,dL);chi=rate;cb=rate*h;}return{tarifa:tarifa,chi:chi,cb:cb,ecamp:ecampR,ecr:ecrR,erp:erpR,dL:dLR};}
+function updAds(p){var h=parseInt(gi(p+'-horas').value)||10,llam=parseInt(gi(p+'-llam').value)||0,pres=parseFloat(gi(p+'-pres').value)||0;var plat=parseInt(gi(p+'-plat').value)||1,cuen=parseInt(gi(p+'-cuen').value)||1,camp=parseInt(gi(p+'-camp').value)||1;var marg=parseInt(gi(p+'-marg').value)||40,pct=parseInt(gi(p+'-pct').value)||15,pmix=parseInt(gi(p+'-pmix').value)||15;var comp=getChip(p+'-comp'),modelo=getChip(p+'-precio'),cr=gi(p+'-creat').checked,rp=gi(p+'-report').checked;['fijo','pct','mixto','hora'].forEach(function(m){gi(p+'-b-'+m).classList.toggle('on',m===modelo);});gs(p+'-horas-v',h+'h');gs(p+'-llam-v',llam+'/mes');gs(p+'-marg-v',marg+'%');gs(p+'-pct-v',pct+'%');gs(p+'-pmix-v',pmix+'%');gs(p+'-crp','€'+(ECR[comp]||100));gs(p+'-rrp','€'+(ERP[comp]||300));gs(p+'-cdesc',CI[comp].desc);gs(p+'-hrate','€'+CI[comp].rate+'/h');gs(p+'-flbl','Fee fijo '+CL[comp]+': '+FL[comp]);gs(p+'-hc',h+'h/mes');var dL=getLlam(llam);gs(p+'-llami',llam===2?'incluidas':llam===0?'-€200':llam===1?'-€100':'+€'+dL);var badge=gi(p+'-badge');if(pres<=1000){badge.textContent='Bajo';badge.className='badge badge-warn';}else if(pres<=5000){badge.textContent='Medio';badge.className='badge badge-info';}else{badge.textContent='Alto';badge.className='badge badge-ok';}var isPct=modelo==='pct',isHora=modelo==='hora';gi(p+'-sh-row').style.display=isPct?'none':'flex';gi(p+'-sh-re').style.display=isPct?'none':'flex';gi(p+'-sm-row').style.display='flex';gi(p+'-sm-re').style.display='flex';if(isPct){gs(p+'-slbl','Delta % inversión');gi(p+'-sm').min=-10;gi(p+'-sm').max=10;gs(p+'-smin','-10%');gs(p+'-smax','+10%');gs(p+'-smid','% aplicado');}else if(isHora){gi(p+'-sm-row').style.display='none';gi(p+'-sm-re').style.display='none';}else{gs(p+'-slbl','Delta margen');gi(p+'-sm').min=-20;gi(p+'-sm').max=20;gs(p+'-smin','-20%');gs(p+'-smax','+20%');gs(p+'-smid','Margen sim.');}var r=calcAds(h,comp,plat,cuen,camp,llam,cr,rp,marg,modelo,pct,pmix,pres);var key=p==='m'?'meta':'linkedin';estado[key]={tarifa:r.tarifa,horas:h,comp:comp,modelo:modelo,marg:marg,pct:pct,pmix:pmix,pres:pres,cr:cr,rp:rp,llam:llam};gs('cb-'+(p==='m'?'m':'l')+'p',fmt(r.tarifa));gs(p+'-tarifa',fmt(r.tarifa));gs(p+'-anual',fmt(r.tarifa*12)+' / año');gs(p+'-pp',pres>0?(r.tarifa/pres*100).toFixed(1)+'%':'—');gs(p+'-ecr',cr?'+€'+(ECR[comp]||100):'—');gs(p+'-erp',rp?'+€'+(ERP[comp]||300):'—');if(gi(p+'-ell'))gs(p+'-ell',llam===2?'—':dL>=0?'+€'+dL:'-€'+Math.abs(dL));if(gi(p+'-ecamp'))gs(p+'-ecamp',r.ecamp>0?'+€'+r.ecamp:'—');if(isPct){gs(p+'-clbl','% sobre inversión');gs(p+'-chi',pct+'%');gs(p+'-cblbl','Base ('+pct+'% de €'+pres+')');gs(p+'-cb',fmt(r.cb));gs(p+'-mlbl','% aplicado');gs(p+'-mb',pct+'% pres.');}else{gs(p+'-clbl',isHora?'Tarifa por hora':'Coste hora implícito');gs(p+'-chi','€'+r.chi+'/h');gs(p+'-cblbl',modelo==='mixto'?'Fee fijo + variable':'Coste base');gs(p+'-cb',fmt(r.cb));gs(p+'-mlbl',isHora?'Extras':'Margen');gs(p+'-mb',isHora?'+€'+(r.tarifa-r.cb):marg+'%');}updBM(r.tarifa,p==='m'?600:800,p==='m'?2500:3000,p+'-bmp',p+'-bpos');var msc=getMSC(marg),tC=Math.round(r.tarifa*0.75/50)*50,tP=Math.round(r.tarifa*1.37/50)*50,hC=Math.max(5,h-2),hP=Math.min(80,h+2);gs(p+'-sc1',fmt(tC));gs(p+'-ss1',isPct?(pct>5?pct-5:0)+'% pres.':hC+'h · '+msc.mC+'%');gs(p+'-sc2',fmt(r.tarifa));gs(p+'-ss2',isPct?pct+'% pres.':h+'h · '+marg+'%');gs(p+'-sc3',fmt(tP));gs(p+'-ss3',isPct?(pct+5)+'% pres.':hP+'h · '+msc.mP+'%');updChart(p+'-ch',[tC,r.tarifa,tP]);updSim(p);updComb();}
+function updSim(p){var h=parseInt(gi(p+'-horas').value)||10,marg=parseInt(gi(p+'-marg').value)||40,pct=parseInt(gi(p+'-pct').value)||15,pmix=parseInt(gi(p+'-pmix').value)||15,pres=parseFloat(gi(p+'-pres').value)||0;var comp=getChip(p+'-comp'),modelo=getChip(p+'-precio'),cr=gi(p+'-creat').checked,rp=gi(p+'-report').checked;var plat=parseInt(gi(p+'-plat').value)||1,cuen=parseInt(gi(p+'-cuen').value)||1,camp=parseInt(gi(p+'-camp').value)||1,llam=parseInt(gi(p+'-llam').value)||0;var dh=parseInt(gi(p+'-sh').value)||0,dm=parseInt(gi(p+'-sm').value)||0,sh=Math.min(80,Math.max(5,h+dh));gi(p+'-sh-v').innerHTML='<span style="color:#fdda63">'+(dh>=0?'+':'')+dh+'h</span> → <span style="color:#71c3b4">'+sh+'h</span>';var simT,simLbl;if(modelo==='pct'){var sp=Math.min(30,Math.max(0,pct+dm));gi(p+'-sm-v').innerHTML='<span style="color:#fdda63">'+(dm>=0?'+':'')+dm+'%</span> → <span style="color:#71c3b4">'+sp+'%</span>';simT=Math.round(pres*sp/100)+(cr?(ECR[comp]||100):0)+(rp?(ERP[comp]||300):0);simLbl=sp+'% pres.';}else{var sm=Math.min(80,Math.max(15,marg+dm));gi(p+'-sm-v').innerHTML='<span style="color:#fdda63">'+(dm>=0?'+':'')+dm+'%</span> → <span style="color:#71c3b4">'+sm+'%</span>';var rs=calcAds(sh,comp,plat,cuen,camp,llam,cr,rp,sm,modelo,pct,pmix,pres);simT=rs.tarifa;simLbl=modelo==='hora'?'€'+CI[comp].rate+'/h':sm+'%';}gs(p+'-simt',fmt(simT));gs(p+'-simm',simLbl);gs(p+'-sima',fmt(simT*12));}
+function updEst(){var comp=getChip('e-comp'),d=ES[comp];gs('e-cdesc',d.desc);gs('e-precio','€'+d.precio);gs('e-rango',d.rango);gi('e-inc').textContent=d.inc;estado.estrategia={tarifa:d.precio,comp:comp};updBM(d.precio,500,2000,'e-bmp','e-bpos');gs('cb-ep','€'+d.precio);updComb();}
+function updAud(){var comp=getChip('a-comp'),d=AU[comp];gs('a-cdesc',d.desc);gs('a-precio','€'+d.precio);gs('a-rango',d.rango);gi('a-inc').textContent=d.inc;estado.auditoria={tarifa:d.precio,comp:comp};var pos=Math.min(98,Math.max(2,(d.precio-250)/(2000-250)*100));gi('a-bmp').style.left=pos+'%';gs('a-bpos',pos<30?'● Rango básico':pos<60?'● Rango medio':'● Rango alto');gs('cb-ap','€'+d.precio);updComb();}
+function updCon(){var comp=getChip('c-comp'),d=CO[comp];gs('c-cdesc',d.desc);gs('c-hora',d.hora);gs('c-horar',d.horaR);gs('c-proy',d.proy);gs('c-proyr',d.proyR);gs('c-inc',d.inc);estado.consultoria={tarifa:parseInt(d.proy.replace(/[€.]/g,'')),comp:comp,hora:d.hora,proy:d.proy};gs('cb-cp',d.proy);updComb();}
+function updComb(){var am=gi('cb-m').checked,al=gi('cb-l').checked,ae=gi('cb-e').checked,aa=gi('cb-a').checked,ac=gi('cb-c').checked;var dtoExtra=parseInt(gi('cb-dto-extra').value)||0;gs('cb-dto-extra-v',dtoExtra+'%');var activos=[am,al,ae,aa,ac].filter(Boolean).length;var dtoAuto=activos===2?0.15:activos>=3?0.22:0;var mT=estado.meta.tarifa,lT=estado.linkedin.tarifa;if(am&&al){mT=Math.round(estado.meta.tarifa*0.85);lT=Math.round(estado.linkedin.tarifa*0.85);}var suma=(am?mT:0)+(al?lT:0)+(ae?estado.estrategia.tarifa:0)+(aa?estado.auditoria.tarifa:0)+(ac?estado.consultoria.tarifa:0);var despuesAuto=Math.round(suma*(1-dtoAuto));var total=Math.round(despuesAuto*(1-dtoExtra/100));var ahorroTotal=suma-total;gs('cb-sum',fmt(suma));gs('cb-dto-auto',dtoAuto>0?(dtoAuto*100)+'%':'—');gs('cb-dto-extra-lbl',dtoExtra>0?'−'+dtoExtra+'%':'—');gi('cb-row-extra').style.display=dtoExtra>0?'flex':'none';gs('cb-aho',ahorroTotal>0?'−€'+ahorroTotal.toLocaleString('es-ES'):'—');gs('cb-tot',fmt(total));gs('cb-fin',fmt(total));var dlbl='';if(dtoAuto>0&&dtoExtra>0)dlbl='Descuento auto '+(dtoAuto*100)+'% + adicional '+dtoExtra+'%';else if(dtoAuto>0)dlbl='Descuento combinado '+(dtoAuto*100)+'% aplicado';else if(dtoExtra>0)dlbl='Descuento adicional '+dtoExtra+'%';else dlbl='Sin descuento — activa más servicios';gs('cb-dlbl',dlbl);var modL=function(e){return{fijo:'Fee fijo',pct:'% pres.',mixto:'Fijo+%',hora:'Por hora'}[e.modelo]||e.modelo;};var resHtml='';if(am){var e=estado.meta;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Meta Ads'+(al?' (−15% h)':'')+'</span><span class="svc-summary-price">'+fmt(mT)+'/mes</span></div><div class="svc-summary-params"><span class="param-tag">'+e.horas+'h</span><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+modL(e)+(e.modelo==='fijo'?' · '+e.marg+'%':e.modelo==='pct'?' · '+e.pct+'%':e.modelo==='mixto'?' · '+e.pmix+'%':'')+'</span><span class="param-tag">'+e.llam+' llam.</span>'+(e.cr?'<span class="param-tag">Creatividades</span>':'')+(e.rp?'<span class="param-tag">Reporting</span>':'')+'</div><button class="goto-btn" data-goto="meta">Editar en Meta Ads →</button></div>';}if(al){var e=estado.linkedin;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">LinkedIn Ads'+(am?' (−15% h)':'')+'</span><span class="svc-summary-price">'+fmt(lT)+'/mes</span></div><div class="svc-summary-params"><span class="param-tag">'+e.horas+'h</span><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+modL(e)+(e.modelo==='fijo'?' · '+e.marg+'%':e.modelo==='pct'?' · '+e.pct+'%':e.modelo==='mixto'?' · '+e.pmix+'%':'')+'</span><span class="param-tag">'+e.llam+' llam.</span>'+(e.cr?'<span class="param-tag">Creatividades</span>':'')+(e.rp?'<span class="param-tag">Reporting</span>':'')+'</div><button class="goto-btn" data-goto="linkedin">Editar en LinkedIn Ads →</button></div>';}if(ae){var e=estado.estrategia;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Estrategia</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">Proyecto</span></div><button class="goto-btn" data-goto="estrategia">Editar en Estrategia →</button></div>';}if(aa){var e=estado.auditoria;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Auditoría</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">Proyecto</span></div><button class="goto-btn" data-goto="auditoria">Editar en Auditoría →</button></div>';}if(ac){var e=estado.consultoria;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Consultoría</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+(e.hora||'€80/h')+'</span></div><button class="goto-btn" data-goto="consultoria">Editar en Consultoría →</button></div>';}if(!resHtml)resHtml='<div style="font-size:12px;color:var(--c-text3);padding:8px 0">Activa servicios para ver el resumen.</div>';gi('cb-resumen').innerHTML=resHtml;gi('cb-resumen').querySelectorAll('.goto-btn').forEach(function(btn){btn.addEventListener('click',function(){var t=btn.dataset.goto;document.querySelectorAll('#mtabs .tab').forEach(function(tab){tab.classList.toggle('on',tab.dataset.t===t);});document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on');});gi('pane-'+t).classList.add('on');});});var html='';if(am)html+='<div class="sr"><span>Meta Ads'+(al?' (−15% horas)':'')+'</span><span class="sv">'+fmt(mT)+'</span></div>';if(al)html+='<div class="sr"><span>LinkedIn Ads'+(am?' (−15% horas)':'')+'</span><span class="sv">'+fmt(lT)+'</span></div>';if(ae)html+='<div class="sr"><span>Estrategia</span><span class="sv">'+fmt(estado.estrategia.tarifa)+'</span></div>';if(aa)html+='<div class="sr"><span>Auditoría</span><span class="sv">'+fmt(estado.auditoria.tarifa)+'</span></div>';if(ac)html+='<div class="sr"><span>Consultoría</span><span class="sv">'+fmt(estado.consultoria.tarifa)+'</span></div>';if(dtoAuto>0)html+='<div class="sr"><span style="color:#71c3b4">Descuento auto '+(dtoAuto*100)+'%</span><span class="sv hl">−€'+(suma-despuesAuto).toLocaleString('es-ES')+'</span></div>';if(dtoExtra>0)html+='<div class="sr"><span style="color:#fdda63">Descuento adicional '+dtoExtra+'%</span><span class="sv yl">−€'+(despuesAuto-total).toLocaleString('es-ES')+'</span></div>';gi('cb-des').innerHTML=html||'<div style="font-size:12px;color:var(--c-text3)">Activa servicios para ver el desglose.</div>';}
+function buildTxt(tipo){var txt='';if(tipo==='meta'||tipo==='linkedin'){var p=tipo==='meta'?'m':'l';var nombre=gi(p+'-cli').value||'Cliente';var ml={fijo:'Fee fijo mensual',pct:'% sobre presupuesto',mixto:'Fee fijo + % variable',hora:'Por hora'};var comp=getChip(p+'-comp'),modelo=getChip(p+'-precio'),cr=gi(p+'-creat').checked,rp=gi(p+'-report').checked;txt='PROPUESTA '+(tipo==='meta'?'META ADS':'LINKEDIN ADS')+' — '+nombre+'\n'+'─'.repeat(40)+'\nTarifa mensual: '+gi(p+'-tarifa').textContent+' / mes (IVA no incluido)\n'+gi(p+'-anual').textContent+'\n\nModelo: '+ml[modelo]+'\nDedicación: '+gi(p+'-horas-v').textContent+' · Complejidad: '+CL[comp]+'\n'+CI[comp].desc+'\nLlamadas: '+gi(p+'-llam').value+'/mes\n'+(cr?'✓ Creatividades incluidas\n':'')+(rp?'✓ Reporting avanzado incluido\n':'')+'\n'+'─'.repeat(40);}else if(tipo==='estrategia'){var comp=getChip('e-comp'),d=ES[comp],nombre=gi('e-cli').value||'Cliente';txt='PROPUESTA ESTRATEGIA — '+nombre+'\n'+'─'.repeat(40)+'\nPrecio: €'+d.precio+' · Rango: '+d.rango+'\nNivel: '+CL[comp]+'\n'+d.desc+'\n\nQué incluye:\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='auditoria'){var comp=getChip('a-comp'),d=AU[comp],nombre=gi('a-cli').value||'Cliente';txt='PROPUESTA AUDITORÍA — '+nombre+'\n'+'─'.repeat(40)+'\nPrecio: €'+d.precio+' · Rango: '+d.rango+'\nNivel: '+CL[comp]+'\n'+d.desc+'\n\nQué incluye:\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='consultoria'){var comp=getChip('c-comp'),d=CO[comp],nombre=gi('c-cli').value||'Cliente';txt='PROPUESTA CONSULTORÍA — '+nombre+'\n'+'─'.repeat(40)+'\nTarifa/hora: '+d.hora+' ('+d.horaR+')\nPor proyecto: '+d.proy+' ('+d.proyR+')\nNivel: '+CL[comp]+'\n'+d.desc+'\n\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='combinado'){var nombre=gi('cb-cli').value||'Cliente';var am=gi('cb-m').checked,al=gi('cb-l').checked,ae=gi('cb-e').checked,aa=gi('cb-a').checked,ac=gi('cb-c').checked;var dtoExtra=parseInt(gi('cb-dto-extra').value)||0;var activos=[am,al,ae,aa,ac].filter(Boolean).length;var dtoAuto=activos===2?0.15:activos>=3?0.22:0;var mT=estado.meta.tarifa,lT=estado.linkedin.tarifa;if(am&&al){mT=Math.round(estado.meta.tarifa*0.85);lT=Math.round(estado.linkedin.tarifa*0.85);}var suma=(am?mT:0)+(al?lT:0)+(ae?estado.estrategia.tarifa:0)+(aa?estado.auditoria.tarifa:0)+(ac?estado.consultoria.tarifa:0);var despuesAuto=Math.round(suma*(1-dtoAuto));var total=Math.round(despuesAuto*(1-dtoExtra/100));var lineas='';if(am)lineas+='· Meta Ads'+(al?' (−15% horas)':'')+': '+fmt(mT)+'/mes\n';if(al)lineas+='· LinkedIn Ads'+(am?' (−15% horas)':'')+': '+fmt(lT)+'/mes\n';if(ae)lineas+='· Estrategia ('+CL[estado.estrategia.comp]+'): '+fmt(estado.estrategia.tarifa)+'\n';if(aa)lineas+='· Auditoría ('+CL[estado.auditoria.comp]+'): '+fmt(estado.auditoria.tarifa)+'\n';if(ac)lineas+='· Consultoría ('+CL[estado.consultoria.comp]+'): '+fmt(estado.consultoria.tarifa)+'\n';txt='PROPUESTA COMBINADA — '+nombre+'\n'+'─'.repeat(40)+'\nServicios incluidos:\n'+lineas+'\nSubtotal: '+fmt(suma)+(dtoAuto>0?'\nDescuento automático '+(dtoAuto*100)+'%: −€'+(suma-despuesAuto).toLocaleString('es-ES'):'')+( dtoExtra>0?'\nDescuento adicional '+dtoExtra+'%: −€'+(despuesAuto-total).toLocaleString('es-ES'):'')+'\nTotal: '+fmt(total)+' (IVA no incluido)\n'+'─'.repeat(40);}return txt;}
+function copyP(tipo,btnId){var txt=buildTxt(tipo),btn=gi(btnId);navigator.clipboard.writeText(txt).then(function(){if(btn){btn.textContent='✓ Copiado';setTimeout(function(){btn.textContent='Copiar propuesta';},2000);}});}
+function addEv(id,ev,cb){var el=gi(id);if(el)el.addEventListener(ev,cb);}
+['m-pres','m-plat','m-cuen','m-camp','m-horas','m-llam','m-marg','m-pct','m-pmix'].forEach(function(id){addEv(id,'input',function(){updAds('m');});});addEv('m-creat','change',function(){updAds('m');});addEv('m-report','change',function(){updAds('m');});addEv('m-sh','input',function(){updSim('m');});addEv('m-sm','input',function(){updSim('m');});setupChips('m-comp',function(){updAds('m');});setupChips('m-precio',function(){updAds('m');});
+['l-pres','l-plat','l-cuen','l-camp','l-horas','l-llam','l-marg','l-pct','l-pmix'].forEach(function(id){addEv(id,'input',function(){updAds('l');});});addEv('l-creat','change',function(){updAds('l');});addEv('l-report','change',function(){updAds('l');});addEv('l-sh','input',function(){updSim('l');});addEv('l-sm','input',function(){updSim('l');});setupChips('l-comp',function(){updAds('l');});setupChips('l-precio',function(){updAds('l');});
+setupChips('e-comp',updEst);setupChips('a-comp',updAud);setupChips('c-comp',updCon);
+['cb-m','cb-l','cb-e','cb-a','cb-c'].forEach(function(id){addEv(id,'change',updComb);});addEv('cb-dto-extra','input',updComb);
+var saveMap={m:['meta','m'],l:['linkedin','l'],e:['estrategia','e'],a:['auditoria','a'],c:['consultoria','c'],cb_:['combinado','cb']};
+Object.keys(saveMap).forEach(function(key){var tipo=saveMap[key][0],pfx=saveMap[key][1];var saveId=pfx+'-save',btnId=pfx+'-btn',cliId=pfx+'-cli';addEv(saveId,'click',function(){var nombre=gi(cliId)?gi(cliId).value||'Sin nombre':'Sin nombre';var tarifa=tipo==='meta'?gi('m-tarifa').textContent:tipo==='linkedin'?gi('l-tarifa').textContent:tipo==='estrategia'?gi('e-precio').textContent:tipo==='auditoria'?gi('a-precio').textContent:tipo==='consultoria'?gi('c-proy').textContent:gi('cb-tot').textContent;saveProp(key,nombre,tarifa);var btn=gi(saveId);if(btn){btn.style.background='var(--c-teal)';btn.style.color='#0f1a18';setTimeout(function(){btn.style.background='';btn.style.color='';},1500);}});addEv(btnId,'click',function(){copyP(tipo,btnId);});});
+updAds('m');updAds('l');updEst();updAud();updCon();updComb();
+})();
+</script>
+</body>
+</html>
