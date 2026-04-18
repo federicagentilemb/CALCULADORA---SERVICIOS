@@ -402,7 +402,7 @@ function updAds(p){var h=parseInt(gi(p+'-horas').value)||10,llam=parseInt(gi(p+'
 function updSim(p){var h=parseInt(gi(p+'-horas').value)||10,marg=parseInt(gi(p+'-marg').value)||40,pct=parseInt(gi(p+'-pct').value)||15,pmix=parseInt(gi(p+'-pmix').value)||15,pres=parseFloat(gi(p+'-pres').value)||0;var comp=getChip(p+'-comp'),modelo=getChip(p+'-precio'),cr=gi(p+'-creat').checked,rp=gi(p+'-report').checked;var plat=parseInt(gi(p+'-plat').value)||1,cuen=parseInt(gi(p+'-cuen').value)||1,camp=parseInt(gi(p+'-camp').value)||1,llam=parseInt(gi(p+'-llam').value)||0;var dh=parseInt(gi(p+'-sh').value)||0,dm=parseInt(gi(p+'-sm').value)||0,sh=Math.min(80,Math.max(5,h+dh));gi(p+'-sh-v').innerHTML='<span style="color:#fdda63">'+(dh>=0?'+':'')+dh+'h</span> → <span style="color:#71c3b4">'+sh+'h</span>';var simT,simLbl;if(modelo==='pct'){var sp=Math.min(30,Math.max(0,pct+dm));gi(p+'-sm-v').innerHTML='<span style="color:#fdda63">'+(dm>=0?'+':'')+dm+'%</span> → <span style="color:#71c3b4">'+sp+'%</span>';simT=Math.round(pres*sp/100)+(cr?(ECR[comp]||100):0)+(rp?(ERP[comp]||300):0);simLbl=sp+'% pres.';}else{var sm=Math.min(80,Math.max(15,marg+dm));gi(p+'-sm-v').innerHTML='<span style="color:#fdda63">'+(dm>=0?'+':'')+dm+'%</span> → <span style="color:#71c3b4">'+sm+'%</span>';var rs=calcAds(sh,comp,plat,cuen,camp,llam,cr,rp,sm,modelo,pct,pmix,pres);simT=rs.tarifa;simLbl=modelo==='hora'?'€'+CI[comp].rate+'/h':sm+'%';}gs(p+'-simt',fmt(simT));gs(p+'-simm',simLbl);gs(p+'-sima',fmt(simT*12));}
 function updEst(){var comp=getChip('e-comp'),d=ES[comp];gs('e-cdesc',d.desc);gs('e-precio','€'+d.precio);gs('e-rango',d.rango);gi('e-inc').textContent=d.inc;estado.estrategia={tarifa:d.precio,comp:comp};updBM(d.precio,500,2000,'e-bmp','e-bpos');gs('cb-ep','€'+d.precio);updComb();}
 function updAud(){var comp=getChip('a-comp'),d=AU[comp];gs('a-cdesc',d.desc);gs('a-precio','€'+d.precio);gs('a-rango',d.rango);gi('a-inc').textContent=d.inc;estado.auditoria={tarifa:d.precio,comp:comp};var pos=Math.min(98,Math.max(2,(d.precio-250)/(2000-250)*100));gi('a-bmp').style.left=pos+'%';gs('a-bpos',pos<30?'● Rango básico':pos<60?'● Rango medio':'● Rango alto');gs('cb-ap','€'+d.precio);updComb();}
-function updCon(){var comp=getChip('c-comp'),d=CO[comp];gs('c-cdesc',d.desc);gs('c-hora',d.hora);gs('c-horar',d.horaR);gs('c-proy',d.proy);gs('c-proyr',d.proyR);gs('c-inc',d.inc);estado.consultoria={tarifa:parseInt(d.proy.replace(/[€.]/g,'')),comp:comp,hora:d.hora,proy:d.proy};gs('cb-cp',d.proy);updComb();}
+function updCon(){var comp=getChip('c-comp'),d=CO[comp];gs('c-cdesc',d.desc);gs('c-hora',d.hora);gs('c-horar',d.horaR);gs('c-proy',d.proy);gs('c-proyr',d.proyR);gs('c-inc',d.inc);estado.consultoria={tarifa:parseInt(d.proy.replace('€','').replace('.','')),comp:comp,hora:d.hora,proy:d.proy};gs('cb-cp',d.proy);updComb();}
 function updComb(){var am=gi('cb-m').checked,al=gi('cb-l').checked,ae=gi('cb-e').checked,aa=gi('cb-a').checked,ac=gi('cb-c').checked;var dtoExtra=parseInt(gi('cb-dto-extra').value)||0;gs('cb-dto-extra-v',dtoExtra+'%');var activos=[am,al,ae,aa,ac].filter(Boolean).length;var dtoAuto=activos===2?0.15:activos>=3?0.22:0;var mT=estado.meta.tarifa,lT=estado.linkedin.tarifa;if(am&&al){mT=Math.round(estado.meta.tarifa*0.85);lT=Math.round(estado.linkedin.tarifa*0.85);}var suma=(am?mT:0)+(al?lT:0)+(ae?estado.estrategia.tarifa:0)+(aa?estado.auditoria.tarifa:0)+(ac?estado.consultoria.tarifa:0);var despuesAuto=Math.round(suma*(1-dtoAuto));var total=Math.round(despuesAuto*(1-dtoExtra/100));var ahorroTotal=suma-total;gs('cb-sum',fmt(suma));gs('cb-dto-auto',dtoAuto>0?(dtoAuto*100)+'%':'—');gs('cb-dto-extra-lbl',dtoExtra>0?'−'+dtoExtra+'%':'—');gi('cb-row-extra').style.display=dtoExtra>0?'flex':'none';gs('cb-aho',ahorroTotal>0?'−€'+ahorroTotal.toLocaleString('es-ES'):'—');gs('cb-tot',fmt(total));gs('cb-fin',fmt(total));var dlbl='';if(dtoAuto>0&&dtoExtra>0)dlbl='Descuento auto '+(dtoAuto*100)+'% + adicional '+dtoExtra+'%';else if(dtoAuto>0)dlbl='Descuento combinado '+(dtoAuto*100)+'% aplicado';else if(dtoExtra>0)dlbl='Descuento adicional '+dtoExtra+'%';else dlbl='Sin descuento — activa más servicios';gs('cb-dlbl',dlbl);var modL=function(e){return{fijo:'Fee fijo',pct:'% pres.',mixto:'Fijo+%',hora:'Por hora'}[e.modelo]||e.modelo;};var resHtml='';if(am){var e=estado.meta;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Meta Ads'+(al?' (−15% h)':'')+'</span><span class="svc-summary-price">'+fmt(mT)+'/mes</span></div><div class="svc-summary-params"><span class="param-tag">'+e.horas+'h</span><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+modL(e)+(e.modelo==='fijo'?' · '+e.marg+'%':e.modelo==='pct'?' · '+e.pct+'%':e.modelo==='mixto'?' · '+e.pmix+'%':'')+'</span><span class="param-tag">'+e.llam+' llam.</span>'+(e.cr?'<span class="param-tag">Creatividades</span>':'')+(e.rp?'<span class="param-tag">Reporting</span>':'')+'</div><button class="goto-btn" data-goto="meta">Editar en Meta Ads →</button></div>';}if(al){var e=estado.linkedin;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">LinkedIn Ads'+(am?' (−15% h)':'')+'</span><span class="svc-summary-price">'+fmt(lT)+'/mes</span></div><div class="svc-summary-params"><span class="param-tag">'+e.horas+'h</span><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+modL(e)+(e.modelo==='fijo'?' · '+e.marg+'%':e.modelo==='pct'?' · '+e.pct+'%':e.modelo==='mixto'?' · '+e.pmix+'%':'')+'</span><span class="param-tag">'+e.llam+' llam.</span>'+(e.cr?'<span class="param-tag">Creatividades</span>':'')+(e.rp?'<span class="param-tag">Reporting</span>':'')+'</div><button class="goto-btn" data-goto="linkedin">Editar en LinkedIn Ads →</button></div>';}if(ae){var e=estado.estrategia;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Estrategia</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">Proyecto</span></div><button class="goto-btn" data-goto="estrategia">Editar en Estrategia →</button></div>';}if(aa){var e=estado.auditoria;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Auditoría</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">Proyecto</span></div><button class="goto-btn" data-goto="auditoria">Editar en Auditoría →</button></div>';}if(ac){var e=estado.consultoria;resHtml+='<div class="svc-summary"><div class="svc-summary-head"><span class="svc-summary-name">Consultoría</span><span class="svc-summary-price">'+fmt(e.tarifa)+'</span></div><div class="svc-summary-params"><span class="param-tag">'+CL[e.comp]+'</span><span class="param-tag">'+(e.hora||'€80/h')+'</span></div><button class="goto-btn" data-goto="consultoria">Editar en Consultoría →</button></div>';}if(!resHtml)resHtml='<div style="font-size:12px;color:var(--c-text3);padding:8px 0">Activa servicios para ver el resumen.</div>';gi('cb-resumen').innerHTML=resHtml;gi('cb-resumen').querySelectorAll('.goto-btn').forEach(function(btn){btn.addEventListener('click',function(){var t=btn.dataset.goto;document.querySelectorAll('#mtabs .tab').forEach(function(tab){tab.classList.toggle('on',tab.dataset.t===t);});document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on');});gi('pane-'+t).classList.add('on');});});var html='';if(am)html+='<div class="sr"><span>Meta Ads'+(al?' (−15% horas)':'')+'</span><span class="sv">'+fmt(mT)+'</span></div>';if(al)html+='<div class="sr"><span>LinkedIn Ads'+(am?' (−15% horas)':'')+'</span><span class="sv">'+fmt(lT)+'</span></div>';if(ae)html+='<div class="sr"><span>Estrategia</span><span class="sv">'+fmt(estado.estrategia.tarifa)+'</span></div>';if(aa)html+='<div class="sr"><span>Auditoría</span><span class="sv">'+fmt(estado.auditoria.tarifa)+'</span></div>';if(ac)html+='<div class="sr"><span>Consultoría</span><span class="sv">'+fmt(estado.consultoria.tarifa)+'</span></div>';if(dtoAuto>0)html+='<div class="sr"><span style="color:#71c3b4">Descuento auto '+(dtoAuto*100)+'%</span><span class="sv hl">−€'+(suma-despuesAuto).toLocaleString('es-ES')+'</span></div>';if(dtoExtra>0)html+='<div class="sr"><span style="color:#fdda63">Descuento adicional '+dtoExtra+'%</span><span class="sv yl">−€'+(despuesAuto-total).toLocaleString('es-ES')+'</span></div>';gi('cb-des').innerHTML=html||'<div style="font-size:12px;color:var(--c-text3)">Activa servicios para ver el desglose.</div>';}
 function buildTxt(tipo){var txt='';if(tipo==='meta'||tipo==='linkedin'){var p=tipo==='meta'?'m':'l';var nombre=gi(p+'-cli').value||'Cliente';var ml={fijo:'Fee fijo mensual',pct:'% sobre presupuesto',mixto:'Fee fijo + % variable',hora:'Por hora'};var comp=getChip(p+'-comp'),modelo=getChip(p+'-precio'),cr=gi(p+'-creat').checked,rp=gi(p+'-report').checked;txt='PROPUESTA '+(tipo==='meta'?'META ADS':'LINKEDIN ADS')+' — '+nombre+'\n'+'─'.repeat(40)+'\nTarifa mensual: '+gi(p+'-tarifa').textContent+' / mes (IVA no incluido)\n'+gi(p+'-anual').textContent+'\n\nModelo: '+ml[modelo]+'\nDedicación: '+gi(p+'-horas-v').textContent+' · Complejidad: '+CL[comp]+'\n'+CI[comp].desc+'\nLlamadas: '+gi(p+'-llam').value+'/mes\n'+(cr?'✓ Creatividades incluidas\n':'')+(rp?'✓ Reporting avanzado incluido\n':'')+'\n'+'─'.repeat(40);}else if(tipo==='estrategia'){var comp=getChip('e-comp'),d=ES[comp],nombre=gi('e-cli').value||'Cliente';txt='PROPUESTA ESTRATEGIA — '+nombre+'\n'+'─'.repeat(40)+'\nPrecio: €'+d.precio+' · Rango: '+d.rango+'\nNivel: '+CL[comp]+'\n'+d.desc+'\n\nQué incluye:\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='auditoria'){var comp=getChip('a-comp'),d=AU[comp],nombre=gi('a-cli').value||'Cliente';txt='PROPUESTA AUDITORÍA — '+nombre+'\n'+'─'.repeat(40)+'\nPrecio: €'+d.precio+' · Rango: '+d.rango+'\nNivel: '+CL[comp]+'\n'+d.desc+'\n\nQué incluye:\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='consultoria'){var comp=getChip('c-comp'),d=CO[comp],nombre=gi('c-cli').value||'Cliente';txt='PROPUESTA CONSULTORÍA — '+nombre+'\n'+'─'.repeat(40)+'\nTarifa/hora: '+d.hora+' ('+d.horaR+')\nPor proyecto: '+d.proy+' ('+d.proyR+')\nNivel: '+CL[comp]+'\n'+d.desc+'\n\n'+d.inc+'\n'+'─'.repeat(40);}else if(tipo==='combinado'){var nombre=gi('cb-cli').value||'Cliente';var am=gi('cb-m').checked,al=gi('cb-l').checked,ae=gi('cb-e').checked,aa=gi('cb-a').checked,ac=gi('cb-c').checked;var dtoExtra=parseInt(gi('cb-dto-extra').value)||0;var activos=[am,al,ae,aa,ac].filter(Boolean).length;var dtoAuto=activos===2?0.15:activos>=3?0.22:0;var mT=estado.meta.tarifa,lT=estado.linkedin.tarifa;if(am&&al){mT=Math.round(estado.meta.tarifa*0.85);lT=Math.round(estado.linkedin.tarifa*0.85);}var suma=(am?mT:0)+(al?lT:0)+(ae?estado.estrategia.tarifa:0)+(aa?estado.auditoria.tarifa:0)+(ac?estado.consultoria.tarifa:0);var despuesAuto=Math.round(suma*(1-dtoAuto));var total=Math.round(despuesAuto*(1-dtoExtra/100));var lineas='';if(am)lineas+='· Meta Ads'+(al?' (−15% horas)':'')+': '+fmt(mT)+'/mes\n';if(al)lineas+='· LinkedIn Ads'+(am?' (−15% horas)':'')+': '+fmt(lT)+'/mes\n';if(ae)lineas+='· Estrategia ('+CL[estado.estrategia.comp]+'): '+fmt(estado.estrategia.tarifa)+'\n';if(aa)lineas+='· Auditoría ('+CL[estado.auditoria.comp]+'): '+fmt(estado.auditoria.tarifa)+'\n';if(ac)lineas+='· Consultoría ('+CL[estado.consultoria.comp]+'): '+fmt(estado.consultoria.tarifa)+'\n';txt='PROPUESTA COMBINADA — '+nombre+'\n'+'─'.repeat(40)+'\nServicios incluidos:\n'+lineas+'\nSubtotal: '+fmt(suma)+(dtoAuto>0?'\nDescuento automático '+(dtoAuto*100)+'%: −€'+(suma-despuesAuto).toLocaleString('es-ES'):'')+( dtoExtra>0?'\nDescuento adicional '+dtoExtra+'%: −€'+(despuesAuto-total).toLocaleString('es-ES'):'')+'\nTotal: '+fmt(total)+' (IVA no incluido)\n'+'─'.repeat(40);}return txt;}
 function copyP(tipo,btnId){var txt=buildTxt(tipo),btn=gi(btnId);navigator.clipboard.writeText(txt).then(function(){if(btn){btn.textContent='✓ Copiado';setTimeout(function(){btn.textContent='Copiar propuesta';},2000);}});}
@@ -415,6 +415,251 @@ var saveMap={m:['meta','m'],l:['linkedin','l'],e:['estrategia','e'],a:['auditori
 Object.keys(saveMap).forEach(function(key){var tipo=saveMap[key][0],pfx=saveMap[key][1];var saveId=pfx+'-save',btnId=pfx+'-btn',cliId=pfx+'-cli';addEv(saveId,'click',function(){var nombre=gi(cliId)?gi(cliId).value||'Sin nombre':'Sin nombre';var tarifa=tipo==='meta'?gi('m-tarifa').textContent:tipo==='linkedin'?gi('l-tarifa').textContent:tipo==='estrategia'?gi('e-precio').textContent:tipo==='auditoria'?gi('a-precio').textContent:tipo==='consultoria'?gi('c-proy').textContent:gi('cb-tot').textContent;saveProp(key,nombre,tarifa);var btn=gi(saveId);if(btn){btn.style.background='var(--c-teal)';btn.style.color='#0f1a18';setTimeout(function(){btn.style.background='';btn.style.color='';},1500);}});addEv(btnId,'click',function(){copyP(tipo,btnId);});});
 updAds('m');updAds('l');updEst();updAud();updCon();updComb();
 })();
+
+
+// ─── PDF GENERATION ────────────────────────────────────────────────────────
+function buildPropuestaData(tipo) {
+  var d = {};
+  var fecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'long', year:'numeric'});
+  d.fecha = fecha;
+
+  if (tipo === 'meta' || tipo === 'linkedin') {
+    var p = tipo === 'meta' ? 'm' : 'l';
+    var comp = getChip(p+'-comp');
+    var modelo = getChip(p+'-precio');
+    var cr = gi(p+'-creat').checked;
+    var rp = gi(p+'-report').checked;
+    var llam = parseInt(gi(p+'-llam').value)||0;
+    var ml = {fijo:'Fee fijo mensual', pct:'% sobre presupuesto', mixto:'Fee fijo + % variable', hora:'Por hora'};
+    d.tipo = tipo === 'meta' ? 'META ADS' : 'LINKEDIN ADS';
+    d.cliente = gi(p+'-cli').value || 'Cliente';
+    d.tarifa = gi(p+'-tarifa').textContent;
+    d.anual = gi(p+'-anual').textContent;
+    d.modelo = ml[modelo];
+    d.horas = gi(p+'-horas-v').textContent;
+    d.complejidad = CL[comp];
+    d.compDesc = CI[comp].desc;
+    d.llamadas = llam + '/mes';
+    d.extras = [];
+    if (cr) d.extras.push('Creatividades incluidas (+€'+(ECR[comp]||100)+'/mes)');
+    if (rp) d.extras.push('Reporting avanzado incluido (+€'+(ERP[comp]||300)+'/mes)');
+    if (modelo === 'fijo') d.extras.push('Margen objetivo: ' + gi(p+'-marg-v').textContent);
+    if (modelo === 'pct') d.extras.push('% sobre inversión: ' + gi(p+'-pct-v').textContent);
+    if (modelo === 'mixto') d.extras.push('% variable: ' + gi(p+'-pmix-v').textContent);
+    d.chi = gi(p+'-chi').textContent;
+    d.pres = gi(p+'-pres').value;
+
+  } else if (tipo === 'estrategia') {
+    var comp = getChip('e-comp');
+    var dd = ES[comp];
+    d.tipo = 'ESTRATEGIA';
+    d.cliente = gi('e-cli').value || 'Cliente';
+    d.tarifa = '€' + dd.precio;
+    d.anual = 'Rango: ' + dd.rango;
+    d.modelo = 'Proyecto puntual';
+    d.complejidad = CL[comp];
+    d.compDesc = dd.desc;
+    d.incluye = dd.inc;
+    d.extras = [];
+
+  } else if (tipo === 'auditoria') {
+    var comp = getChip('a-comp');
+    var dd = AU[comp];
+    d.tipo = 'AUDITORÍA';
+    d.cliente = gi('a-cli').value || 'Cliente';
+    d.tarifa = '€' + dd.precio;
+    d.anual = 'Rango: ' + dd.rango;
+    d.modelo = 'Proyecto puntual';
+    d.complejidad = CL[comp];
+    d.compDesc = dd.desc;
+    d.incluye = dd.inc;
+    d.extras = [];
+
+  } else if (tipo === 'consultoria') {
+    var comp = getChip('c-comp');
+    var dd = CO[comp];
+    d.tipo = 'CONSULTORÍA';
+    d.cliente = gi('c-cli').value || 'Cliente';
+    d.tarifa = dd.proy;
+    d.anual = dd.hora + ' · Rango hora: ' + dd.horaR;
+    d.modelo = 'Proyecto / sesión';
+    d.complejidad = CL[comp];
+    d.compDesc = dd.desc;
+    d.incluye = dd.inc;
+    d.extras = [];
+
+  } else if (tipo === 'combinado') {
+    var am=gi('cb-m').checked, al=gi('cb-l').checked, ae=gi('cb-e').checked, aa=gi('cb-a').checked, ac=gi('cb-c').checked;
+    var dtoExtra=parseInt(gi('cb-dto-extra').value)||0;
+    var activos=[am,al,ae,aa,ac].filter(Boolean).length;
+    var dtoAuto=activos===2?0.15:activos>=3?0.22:0;
+    var mT=estado.meta.tarifa, lT=estado.linkedin.tarifa;
+    if(am&&al){mT=Math.round(estado.meta.tarifa*0.85);lT=Math.round(estado.linkedin.tarifa*0.85);}
+    var suma=(am?mT:0)+(al?lT:0)+(ae?estado.estrategia.tarifa:0)+(aa?estado.auditoria.tarifa:0)+(ac?estado.consultoria.tarifa:0);
+    var despuesAuto=Math.round(suma*(1-dtoAuto));
+    var total=Math.round(despuesAuto*(1-dtoExtra/100));
+    d.tipo = 'PROPUESTA COMBINADA';
+    d.cliente = gi('cb-cli').value || 'Cliente';
+    d.tarifa = fmt(total);
+    d.anual = '';
+    d.modelo = '';
+    d.complejidad = '';
+    d.compDesc = '';
+    d.extras = [];
+    d.lineas = [];
+    if(am) d.lineas.push({svc:'Meta Ads'+(al?' (−15% h)':''), val:fmt(mT)+'/mes', params: estado.meta.horas+'h · '+CL[estado.meta.comp]+' · '+estado.meta.llam+' llamadas'});
+    if(al) d.lineas.push({svc:'LinkedIn Ads'+(am?' (−15% h)':''), val:fmt(lT)+'/mes', params: estado.linkedin.horas+'h · '+CL[estado.linkedin.comp]+' · '+estado.linkedin.llam+' llamadas'});
+    if(ae) d.lineas.push({svc:'Estrategia', val:fmt(estado.estrategia.tarifa), params: CL[estado.estrategia.comp]});
+    if(aa) d.lineas.push({svc:'Auditoría', val:fmt(estado.auditoria.tarifa), params: CL[estado.auditoria.comp]});
+    if(ac) d.lineas.push({svc:'Consultoría', val:fmt(estado.consultoria.tarifa), params: CL[estado.consultoria.comp]+' · '+estado.consultoria.hora});
+    d.subtotal = fmt(suma);
+    d.dtoAuto = dtoAuto > 0 ? (dtoAuto*100)+'%' : '';
+    d.dtoExtra = dtoExtra > 0 ? dtoExtra+'%' : '';
+    d.ahorroAuto = dtoAuto > 0 ? '−€'+(suma-despuesAuto).toLocaleString('es-ES') : '';
+    d.ahorroExtra = dtoExtra > 0 ? '−€'+(despuesAuto-total).toLocaleString('es-ES') : '';
+    d.total = fmt(total);
+  }
+  return d;
+}
+
+function generarPDF(tipo) {
+  var d = buildPropuestaData(tipo);
+  if (!d.cliente || d.cliente === 'Cliente' || d.cliente === 'Sin nombre') {
+    var cliId = tipo==='meta'?'m-cli':tipo==='linkedin'?'l-cli':tipo==='estrategia'?'e-cli':tipo==='auditoria'?'a-cli':tipo==='consultoria'?'c-cli':'cb-cli';
+    var nombre = gi(cliId) ? gi(cliId).value : '';
+    if (!nombre.trim()) {
+      alert('Escribe el nombre del cliente antes de generar el PDF.');
+      return;
+    }
+  }
+
+  // Build HTML for PDF window
+  var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">';
+  html += '<style>';
+  html += 'body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;margin:0;padding:40px;max-width:700px;margin:0 auto}';
+  html += '.header{border-bottom:3px solid #71c3b4;padding-bottom:20px;margin-bottom:30px}';
+  html += '.logo-line{display:flex;justify-content:space-between;align-items:flex-start}';
+  html += '.svc-badge{font-size:11px;font-weight:700;letter-spacing:.15em;color:#71c3b4;text-transform:uppercase;font-family:monospace;background:#f0faf8;padding:4px 12px;border-radius:20px;border:1px solid #71c3b4}';
+  html += '.fecha{font-size:11px;color:#888;font-family:monospace}';
+  html += 'h1{font-size:28px;font-weight:700;color:#1a1a1a;margin:16px 0 4px}';
+  html += '.subtitle{font-size:14px;color:#555;margin-bottom:0}';
+  html += '.tarifa-block{background:#f0faf8;border-left:4px solid #71c3b4;padding:20px 24px;margin:28px 0;border-radius:0 8px 8px 0}';
+  html += '.tarifa-label{font-size:11px;color:#71c3b4;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;font-weight:700}';
+  html += '.tarifa-val{font-size:42px;font-weight:700;color:#1a1a1a;font-family:monospace;letter-spacing:-.02em;margin:4px 0}';
+  html += '.tarifa-sub{font-size:13px;color:#666;font-family:monospace}';
+  html += '.section{margin:24px 0}';
+  html += '.section-title{font-size:11px;font-weight:700;color:#71c3b4;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #e8f5f3}';
+  html += '.param-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}';
+  html += '.param-row:last-child{border-bottom:none}';
+  html += '.param-label{color:#666}';
+  html += '.param-val{font-weight:600;color:#1a1a1a;font-family:monospace}';
+  html += '.desc-box{background:#fafafa;border:1px solid #eee;border-radius:6px;padding:14px;font-size:13px;color:#444;line-height:1.6;margin:12px 0}';
+  html += '.incluye-list{font-size:13px;color:#444;line-height:1.9}';
+  html += '.tag{display:inline-block;background:#f0faf8;color:#2a8a7a;border:1px solid #c8ede8;border-radius:10px;padding:2px 10px;font-size:12px;font-family:monospace;margin:2px}';
+  html += '.footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center;font-family:monospace}';
+  html += '.linea-svc{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f0f0}';
+  html += '.linea-svc-name{font-weight:600;font-size:14px}';
+  html += '.linea-svc-params{font-size:11px;color:#888;font-family:monospace;margin-top:2px}';
+  html += '.linea-svc-val{font-family:monospace;font-weight:700;font-size:14px;color:#1a1a1a}';
+  html += '.total-row{display:flex;justify-content:space-between;padding:14px 0;font-size:18px;font-weight:700;font-family:monospace;border-top:2px solid #71c3b4;margin-top:8px}';
+  html += '.dto-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#2a8a7a;font-family:monospace}';
+  html += '</style></head><body>';
+
+  html += '<div class="header">';
+  html += '<div class="logo-line"><span class="svc-badge">'+d.tipo+'</span><span class="fecha">'+d.fecha+'</span></div>';
+  html += '<h1>'+d.cliente+'</h1>';
+  if (d.modelo) html += '<div class="subtitle">'+d.modelo+'</div>';
+  html += '</div>';
+
+  if (tipo !== 'combinado') {
+    html += '<div class="tarifa-block">';
+    html += '<div class="tarifa-label">' + (tipo==='consultoria'?'Precio por proyecto':'Tarifa recomendada') + '</div>';
+    html += '<div class="tarifa-val">'+d.tarifa+'</div>';
+    if (d.anual) html += '<div class="tarifa-sub">'+d.anual+'</div>';
+    html += '</div>';
+  }
+
+  if (tipo === 'meta' || tipo === 'linkedin') {
+    html += '<div class="section"><div class="section-title">Parámetros del servicio</div>';
+    html += '<div class="param-row"><span class="param-label">Complejidad</span><span class="param-val">'+d.complejidad+'</span></div>';
+    html += '<div class="param-row"><span class="param-label">Dedicación mensual</span><span class="param-val">'+d.horas+'</span></div>';
+    html += '<div class="param-row"><span class="param-label">Llamadas incluidas</span><span class="param-val">'+d.llamadas+'</span></div>';
+    html += '<div class="param-row"><span class="param-label">Coste hora implícito</span><span class="param-val">'+d.chi+'</span></div>';
+    html += '<div class="param-row"><span class="param-label">Presupuesto publicitario</span><span class="param-val">€'+d.pres+'/mes</span></div>';
+    html += '</div>';
+    if (d.compDesc) { html += '<div class="section"><div class="section-title">Tipo de cuenta</div><div class="desc-box">'+d.compDesc+'</div></div>'; }
+    if (d.extras.length > 0) {
+      html += '<div class="section"><div class="section-title">Extras incluidos</div>';
+      d.extras.forEach(function(e){ html += '<span class="tag">✓ '+e+'</span> '; });
+      html += '</div>';
+    }
+
+  } else if (tipo === 'estrategia' || tipo === 'auditoria' || tipo === 'consultoria') {
+    html += '<div class="section"><div class="section-title">Nivel</div>';
+    html += '<div class="param-row"><span class="param-label">Complejidad</span><span class="param-val">'+d.complejidad+'</span></div>';
+    html += '</div>';
+    if (d.compDesc) { html += '<div class="section"><div class="section-title">Descripción</div><div class="desc-box">'+d.compDesc+'</div></div>'; }
+    if (d.incluye) {
+      html += '<div class="section"><div class="section-title">Qué incluye</div>';
+      html += '<div class="incluye-list">'+d.incluye.replace(/
+/g,'<br>')+'</div>';
+      html += '</div>';
+    }
+
+  } else if (tipo === 'combinado') {
+    html += '<div class="section"><div class="section-title">Servicios incluidos</div>';
+    d.lineas.forEach(function(l){
+      html += '<div class="linea-svc"><div><div class="linea-svc-name">'+l.svc+'</div><div class="linea-svc-params">'+l.params+'</div></div><div class="linea-svc-val">'+l.val+'</div></div>';
+    });
+    if (d.dtoAuto) html += '<div class="dto-row"><span>Descuento combinado automático ('+d.dtoAuto+')</span><span>'+d.ahorroAuto+'</span></div>';
+    if (d.dtoExtra) html += '<div class="dto-row"><span>Descuento adicional ('+d.dtoExtra+')</span><span>'+d.ahorroExtra+'</span></div>';
+    html += '<div class="total-row"><span>TOTAL</span><span>'+d.total+'</span></div>';
+    html += '</div>';
+    html += '<div class="tarifa-block">';
+    html += '<div class="tarifa-label">Total combinado</div>';
+    html += '<div class="tarifa-val">'+d.total+'</div>';
+    html += '<div class="tarifa-sub">IVA no incluido</div>';
+    html += '</div>';
+  }
+
+  html += '<div class="footer">Propuesta generada el '+d.fecha+' · IVA no incluido · Precios orientativos</div>';
+  html += '</body></html>';
+
+  // Open in new window and print
+  var win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) {
+    alert('Tu navegador bloqueó la ventana emergente. Permítela para generar el PDF.');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function(){ win.print(); }, 600);
+}
+
+// Add PDF buttons to save sections
+(function addPdfButtons(){
+  var configs = [
+    {saveId:'m-save', tipo:'meta', pfx:'m'},
+    {saveId:'l-save', tipo:'linkedin', pfx:'l'},
+    {saveId:'e-save', tipo:'estrategia', pfx:'e'},
+    {saveId:'a-save', tipo:'auditoria', pfx:'a'},
+    {saveId:'c-save', tipo:'consultoria', pfx:'c'},
+    {saveId:'cb-save', tipo:'combinado', pfx:'cb'}
+  ];
+  configs.forEach(function(cfg){
+    var saveBtn = gi(cfg.saveId);
+    if (!saveBtn) return;
+    var pdfBtn = document.createElement('button');
+    pdfBtn.className = 'save-btn';
+    pdfBtn.title = 'Descargar PDF';
+    pdfBtn.style.marginLeft = '4px';
+    pdfBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>';
+    pdfBtn.addEventListener('click', function(){ generarPDF(cfg.tipo); });
+    saveBtn.parentNode.insertBefore(pdfBtn, saveBtn.nextSibling);
+  });
+})();
+
 </script>
 </body>
 </html>
