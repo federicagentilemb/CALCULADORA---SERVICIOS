@@ -8,11 +8,135 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<!-- ████████████████████████████████████████
+     BLOQUE DE SEGURIDAD — NO MODIFICAR
+     ████████████████████████████████████████ -->
+<script>
+(function(){
+  /* ── 1. LOGIN ── */
+  var PASS = "agencia2025"; // 👈 Cambia esta contraseña
+  var stored = sessionStorage.getItem("_auth");
+  if (stored !== PASS) {
+    document.addEventListener("DOMContentLoaded", function() {
+      var overlay = document.getElementById("_login-overlay");
+      if (overlay) overlay.style.display = "flex";
+    });
+  }
+
+  /* ── 2. BLOQUEO DE DEVTOOLS ── */
+  setInterval(function(){
+    var threshold = 160;
+    if (window.outerWidth - window.innerWidth > threshold ||
+        window.outerHeight - window.innerHeight > threshold) {
+      document.body.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#16181c;color:#e8eaf0;flex-direction:column;gap:16px;font-family:sans-serif">' +
+        '<div style="font-size:32px">🔒</div>' +
+        '<div style="font-size:18px;font-weight:600">Acceso bloqueado</div>' +
+        '<div style="font-size:13px;color:#9ea3b0">Cierra las herramientas de desarrollador y recarga la página.</div>' +
+        '</div>';
+    }
+  }, 1000);
+
+  /* ── 3. BLOQUEO DE ATAJOS Y CLIC DERECHO ── */
+  document.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["I","J","C","K"].includes(e.key)) ||
+        (e.ctrlKey && ["U","S","A"].includes(e.key)) ||
+        (e.metaKey && e.altKey && ["I","J","C"].includes(e.key))) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  });
+
+  /* ── 4. BLOQUEO DE SELECCIÓN Y ARRASTRAR ── */
+  document.addEventListener("selectstart", function(e){
+    if (e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault();
+    }
+  });
+  document.addEventListener("dragstart", function(e){ e.preventDefault(); });
+})();
+</script>
+
 <style>
+/* ── OVERLAY DE LOGIN ── */
+#_login-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #16181c;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+}
+._login-box {
+  background: #1e2127;
+  border: 1px solid #3a3e48;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+._login-box h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e8eaf0;
+  margin-bottom: 6px;
+}
+._login-box p {
+  font-size: 12px;
+  color: #9ea3b0;
+  margin-bottom: 24px;
+}
+._login-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #3a3e48;
+  border-radius: 8px;
+  background: #252830;
+  color: #e8eaf0;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .1em;
+  text-align: center;
+  transition: border-color .2s;
+}
+._login-input:focus { border-color: #71c3b4; }
+._login-btn {
+  width: 100%;
+  padding: 11px;
+  background: #71c3b4;
+  border: none;
+  border-radius: 8px;
+  color: #0f1a18;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s;
+}
+._login-btn:hover { background: #4fa898; }
+._login-err {
+  font-size: 12px;
+  color: #e07070;
+  margin-top: 10px;
+  min-height: 18px;
+}
+._login-lock { font-size: 36px; margin-bottom: 16px; }
+
 :root{--c-bg:#16181c;--c-bg2:#1e2127;--c-bg3:#252830;--c-border:#2e3138;--c-border2:#3a3e48;--c-text:#e8eaf0;--c-text2:#9ea3b0;--c-text3:#64697a;--c-teal:#71c3b4;--c-teal-d:#4fa898;--c-teal-dim:rgba(113,195,180,.12);--c-yellow:#fdda63;--c-red:#e07070;--rad:10px;--rad-sm:6px}
 *{box-sizing:border-box;margin:0;padding:0}
 body,input,button{font-family:'DM Sans',sans-serif}
-body{background:var(--c-bg);color:var(--c-text);min-height:100vh;padding:1.5rem}
+body{background:var(--c-bg);color:var(--c-text);min-height:100vh;padding:1.5rem;user-select:none;-webkit-user-select:none}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--c-border)}
 .tab{font-size:12px;padding:6px 16px;border-radius:20px;border:1px solid var(--c-border2);cursor:pointer;background:var(--c-bg2);color:var(--c-text2);font-weight:500;transition:all .2s;letter-spacing:.02em}
 .tab:hover{border-color:var(--c-teal);color:var(--c-teal)}
@@ -110,6 +234,47 @@ input:checked+.sl:before{transform:translateX(18px)}
 </style>
 </head>
 <body>
+
+<!-- OVERLAY DE LOGIN -->
+<div id="_login-overlay">
+  <div class="_login-box">
+    <div class="_login-lock">🔒</div>
+    <h2>Acceso restringido</h2>
+    <p>Introduce la contraseña para acceder a la calculadora.</p>
+    <input class="_login-input" type="password" id="_pass-input" placeholder="Contraseña" autocomplete="off">
+    <button class="_login-btn" id="_pass-btn">Entrar</button>
+    <div class="_login-err" id="_pass-err"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PASS = "agencia2025"; // 👈 Misma contraseña que arriba
+  var overlay = document.getElementById("_login-overlay");
+  var stored = sessionStorage.getItem("_auth");
+  if (stored === PASS) { overlay.style.display = "none"; return; }
+  overlay.style.display = "flex";
+
+  function tryLogin() {
+    var val = document.getElementById("_pass-input").value;
+    if (val === PASS) {
+      sessionStorage.setItem("_auth", PASS);
+      overlay.style.display = "none";
+    } else {
+      var err = document.getElementById("_pass-err");
+      err.textContent = "Contraseña incorrecta. Inténtalo de nuevo.";
+      document.getElementById("_pass-input").value = "";
+      document.getElementById("_pass-input").focus();
+      setTimeout(function(){ err.textContent = ""; }, 3000);
+    }
+  }
+  document.getElementById("_pass-btn").addEventListener("click", tryLogin);
+  document.getElementById("_pass-input").addEventListener("keydown", function(e){
+    if (e.key === "Enter") tryLogin();
+  });
+  document.getElementById("_pass-input").focus();
+})();
+</script>
 
 <div class="tabs" id="mtabs">
   <div class="tab on" data-t="meta">Meta Ads</div>
